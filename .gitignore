@@ -1,0 +1,54 @@
+# --- Secrets (never commit) ---
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# ASP.NET Core appsettings (keep base config, ignore environment overrides)
+appsettings.*.json
+!appsettings.json
+!appsettings*.example.json
+!appsettings*.sample.json
+
+# User secrets / certificates
+**/secrets.json
+**/*.pfx
+**/*.p12
+**/*.pem
+**/*.key
+
+# --- OS / Editor / IDE ---
+.vs/
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.swp
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+
+# --- .NET build artifacts ---
+bin/
+obj/
+**/[Oo]bj/
+**/[Bb]in/
+*.dll
+*.exe
+*.pdb
+*.cache
+*.nupkg
+*.snupkg
+artifacts/
+
+# --- Local databases / runtime data ---
+*.db
+*.db-shm
+*.db-wal
