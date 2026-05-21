@@ -82,12 +82,6 @@ export const api = {
   getProgress: (id) => request(`/api/Progress/${id}`),
   createProgress: (body) => request('/api/Progress', { method: 'POST', body }),
 
-  listItems: () => request('/api/Items'),
-  getItem: (id) => request(`/api/Items/${id}`),
-  createItem: (body) => request('/api/Items', { method: 'POST', body }),
-  updateItem: (id, body) => request(`/api/Items/${id}`, { method: 'PUT', body }),
-  deleteItem: (id) => request(`/api/Items/${id}`, { method: 'DELETE' }),
-
   listAdminUsers: () => request('/api/admin/users'),
 };
 

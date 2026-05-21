@@ -4,7 +4,6 @@ import { AdminSection } from './components/AdminSection';
 import { AuthSection } from './components/AuthSection';
 import { ExercisesSection } from './components/ExercisesSection';
 import { GoalsSection } from './components/GoalsSection';
-import { ItemsSection } from './components/ItemsSection';
 import { ProgressSection } from './components/ProgressSection';
 import { WorkoutsSection } from './components/WorkoutsSection';
 
@@ -14,7 +13,6 @@ const TABS = [
   { id: 'exercises', label: 'Exercises' },
   { id: 'goals', label: 'Goals' },
   { id: 'progress', label: 'Progress' },
-  { id: 'items', label: 'Items' },
   { id: 'admin', label: 'Admin' },
 ];
 
@@ -70,7 +68,6 @@ export default function App() {
       {tab === 'exercises' && <ExercisesSection />}
       {tab === 'goals' && <GoalsSection />}
       {tab === 'progress' && <ProgressSection />}
-      {tab === 'items' && <ItemsSection />}
       {tab === 'admin' && <AdminSection />}
     </div>
   );

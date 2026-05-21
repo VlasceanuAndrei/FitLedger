@@ -111,7 +111,6 @@ builder.Services.AddScoped<FitnessTracker.Api.Repositories.IWorkoutRepository, F
 builder.Services.AddScoped<FitnessTracker.Api.Repositories.IExerciseRepository, FitnessTracker.Api.Repositories.ExerciseRepository>();
 builder.Services.AddScoped<FitnessTracker.Api.Repositories.IGoalRepository, FitnessTracker.Api.Repositories.GoalRepository>();
 builder.Services.AddScoped<FitnessTracker.Api.Repositories.IProgressRepository, FitnessTracker.Api.Repositories.ProgressRepository>();
-builder.Services.AddScoped<FitnessTracker.Api.Repositories.IItemRepository, FitnessTracker.Api.Repositories.ItemRepository>();
 
 builder.Services.AddScoped<FitnessTracker.Api.Services.IJwtTokenService, FitnessTracker.Api.Services.JwtTokenService>();
 builder.Services.AddScoped<FitnessTracker.Api.Services.IAuthService, FitnessTracker.Api.Services.AuthService>();
@@ -119,7 +118,6 @@ builder.Services.AddScoped<FitnessTracker.Api.Services.IWorkoutService, FitnessT
 builder.Services.AddScoped<FitnessTracker.Api.Services.IExerciseService, FitnessTracker.Api.Services.ExerciseService>();
 builder.Services.AddScoped<FitnessTracker.Api.Services.IGoalService, FitnessTracker.Api.Services.GoalService>();
 builder.Services.AddScoped<FitnessTracker.Api.Services.IProgressService, FitnessTracker.Api.Services.ProgressService>();
-builder.Services.AddScoped<FitnessTracker.Api.Services.IItemService, FitnessTracker.Api.Services.ItemService>();
 
 var app = builder.Build();
 

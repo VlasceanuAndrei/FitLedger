@@ -16,7 +16,6 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
     public DbSet<WorkoutExercise> WorkoutExercises => Set<WorkoutExercise>();
     public DbSet<Goal> Goals => Set<Goal>();
     public DbSet<ProgressEntry> ProgressEntries => Set<ProgressEntry>();
-    public DbSet<Item> Items => Set<Item>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -75,17 +74,6 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
             e.Property(x => x.Metric).HasMaxLength(100).IsRequired();
             e.HasOne(x => x.User)
                 .WithMany(u => u.ProgressEntries)
-                .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
-
-        builder.Entity<Item>(e =>
-        {
-            e.HasKey(x => x.Id);
-            e.Property(x => x.Name).HasMaxLength(200).IsRequired();
-            e.Property(x => x.Description).HasMaxLength(1000);
-            e.HasOne(x => x.User)
-                .WithMany(u => u.Items)
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });

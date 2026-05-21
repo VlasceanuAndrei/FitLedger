@@ -162,31 +162,6 @@ namespace FitnessTracker.Api.Migrations
                     b.ToTable("Goals");
                 });
 
-            modelBuilder.Entity("FitnessTracker.Api.Models.Item", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(1000)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Items");
-                });
-
             modelBuilder.Entity("FitnessTracker.Api.Models.ProgressEntry", b =>
                 {
                     b.Property<Guid>("Id")
@@ -382,17 +357,6 @@ namespace FitnessTracker.Api.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("FitnessTracker.Api.Models.Item", b =>
-                {
-                    b.HasOne("FitnessTracker.Api.Models.AppUser", "User")
-                        .WithMany("Items")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("FitnessTracker.Api.Models.ProgressEntry", b =>
                 {
                     b.HasOne("FitnessTracker.Api.Models.AppUser", "User")
@@ -499,8 +463,6 @@ namespace FitnessTracker.Api.Migrations
             modelBuilder.Entity("FitnessTracker.Api.Models.AppUser", b =>
                 {
                     b.Navigation("Goals");
-
-                    b.Navigation("Items");
 
                     b.Navigation("ProgressEntries");
 
