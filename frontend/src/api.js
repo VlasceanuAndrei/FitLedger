@@ -68,8 +68,7 @@ export const api = {
   updateWorkout: (id, body) => request(`/api/Workouts/${id}`, { method: 'PUT', body }),
   deleteWorkout: (id) => request(`/api/Workouts/${id}`, { method: 'DELETE' }),
 
-  listExercisesPublic: () => request('/api/Exercises/public', { auth: false }),
-  listExercises: () => request('/api/Exercises'),
+  listExercises: () => request('/api/Exercises', { auth: false }),
   getExercise: (id) => request(`/api/Exercises/${id}`),
   createExercise: (body) => request('/api/Exercises', { method: 'POST', body }),
   deleteExercise: (id) => request(`/api/Exercises/${id}`, { method: 'DELETE' }),

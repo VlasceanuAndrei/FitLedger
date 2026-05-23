@@ -17,14 +17,8 @@ public sealed class ExercisesController : ControllerBase
         _exercises = exercises;
     }
 
-    [HttpGet("public")]
-    [AllowAnonymous]
-    public async Task<ActionResult<List<ExerciseDto>>> PublicList(CancellationToken ct)
-    {
-        return Ok(await _exercises.ListAsync(ct));
-    }
-
     [HttpGet]
+    [AllowAnonymous]
     public async Task<ActionResult<List<ExerciseDto>>> List(CancellationToken ct)
     {
         return Ok(await _exercises.ListAsync(ct));

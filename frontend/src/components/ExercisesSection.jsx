@@ -9,9 +9,6 @@ export function ExercisesSection() {
 
   return (
     <Section title="Exercises">
-      <button type="button" onClick={() => runRequest(() => api.listExercisesPublic()).then(setOut)}>
-        GET /api/Exercises/public (no auth)
-      </button>
       <button type="button" onClick={() => runRequest(() => api.listExercises()).then(setOut)}>
         GET /api/Exercises
       </button>
