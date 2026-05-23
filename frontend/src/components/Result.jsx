@@ -1,17 +1,22 @@
 export function Result({ label, data, error }) {
   if (error) {
     return (
-      <pre style={{ color: 'crimson', whiteSpace: 'pre-wrap' }}>
+      <pre className="result-panel result-panel--error">
         {label ? `${label}: ` : ''}
         {error}
       </pre>
     );
   }
   if (data === undefined || data === null) {
-    return <pre>{label ? `${label}: ` : ''}(no content — e.g. 204)</pre>;
+    return (
+      <pre className="result-panel result-panel--empty">
+        {label ? `${label}: ` : ''}
+        (no content — e.g. 204)
+      </pre>
+    );
   }
   return (
-    <pre style={{ whiteSpace: 'pre-wrap' }}>
+    <pre className="result-panel">
       {label ? `${label}:\n` : ''}
       {JSON.stringify(data, null, 2)}
     </pre>
@@ -20,8 +25,8 @@ export function Result({ label, data, error }) {
 
 export function Section({ title, children }) {
   return (
-    <section style={{ marginBottom: '1.5rem', borderBottom: '1px solid #ccc', paddingBottom: '1rem' }}>
-      <h2>{title}</h2>
+    <section className="section-card">
+      <h2 className="section-card__title">{title}</h2>
       {children}
     </section>
   );
@@ -29,10 +34,19 @@ export function Section({ title, children }) {
 
 export function Field({ label, children }) {
   return (
-    <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-      {label}: {children}
+    <label className="field">
+      <span className="field__label">{label}</span>
+      {children}
     </label>
   );
+}
+
+export function BtnRow({ children }) {
+  return <div className="btn-row">{children}</div>;
+}
+
+export function Divider() {
+  return <hr className="section-card__divider" />;
 }
 
 export async function runRequest(fn) {

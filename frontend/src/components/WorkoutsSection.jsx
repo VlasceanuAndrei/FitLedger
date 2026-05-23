@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { api, parseIntList } from '../api';
-import { Field, Result, Section, runRequest } from './Result';
+import { Button } from './ui/Button';
+import { BtnRow, Field, Result, Section, runRequest } from './Result';
 
 export function WorkoutsSection() {
   const [id, setId] = useState('');
@@ -12,32 +13,38 @@ export function WorkoutsSection() {
 
   return (
     <Section title="Workouts (authenticated)">
-      <button type="button" onClick={() => runRequest(() => api.listWorkouts()).then(setOut)}>
-        GET /api/Workouts
-      </button>
+      <BtnRow>
+        <Button variant="secondary" onClick={() => runRequest(() => api.listWorkouts()).then(setOut)}>
+          GET /api/Workouts
+        </Button>
+      </BtnRow>
 
       <Field label="id (number)">
-        <input type="number" value={id} onChange={(e) => setId(e.target.value)} />
+        <input className="field__input" type="number" value={id} onChange={(e) => setId(e.target.value)} />
       </Field>
-      <button type="button" onClick={() => runRequest(() => api.getWorkout(id)).then(setOut)}>
-        GET /api/Workouts/{'{id}'}
-      </button>
+      <BtnRow>
+        <Button variant="secondary" onClick={() => runRequest(() => api.getWorkout(id)).then(setOut)}>
+          GET /api/Workouts/{'{id}'}
+        </Button>
+      </BtnRow>
 
       <Field label="name">
-        <input value={name} onChange={(e) => setName(e.target.value)} />
+        <input className="field__input" value={name} onChange={(e) => setName(e.target.value)} />
       </Field>
       <Field label="exerciseIds (comma-separated numbers)">
-        <input value={exerciseIds} onChange={(e) => setExerciseIds(e.target.value)} />
+        <input className="field__input" value={exerciseIds} onChange={(e) => setExerciseIds(e.target.value)} />
       </Field>
-      <button type="button" onClick={() => runRequest(() => api.createWorkout(body())).then(setOut)}>
-        POST /api/Workouts
-      </button>
-      <button type="button" onClick={() => runRequest(() => api.updateWorkout(id, body())).then(setOut)}>
-        PUT /api/Workouts/{'{id}'}
-      </button>
-      <button type="button" onClick={() => runRequest(() => api.deleteWorkout(id)).then(setOut)}>
-        DELETE /api/Workouts/{'{id}'}
-      </button>
+      <BtnRow>
+        <Button variant="primary" onClick={() => runRequest(() => api.createWorkout(body())).then(setOut)}>
+          POST /api/Workouts
+        </Button>
+        <Button variant="neutral" onClick={() => runRequest(() => api.updateWorkout(id, body())).then(setOut)}>
+          PUT /api/Workouts/{'{id}'}
+        </Button>
+        <Button variant="danger" onClick={() => runRequest(() => api.deleteWorkout(id)).then(setOut)}>
+          DELETE /api/Workouts/{'{id}'}
+        </Button>
+      </BtnRow>
 
       <Result data={out.data} error={out.error} />
     </Section>

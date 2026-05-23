@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { api } from '../api';
-import { Field, Result, Section, runRequest } from './Result';
+import { Button } from './ui/Button';
+import { BtnRow, Field, Result, Section, runRequest } from './Result';
 
 export function GoalsSection() {
   const [id, setId] = useState('');
@@ -17,29 +18,40 @@ export function GoalsSection() {
 
   return (
     <Section title="Goals (authenticated, create only)">
-      <button type="button" onClick={() => runRequest(() => api.listGoals()).then(setOut)}>
-        GET /api/Goals
-      </button>
+      <BtnRow>
+        <Button variant="secondary" onClick={() => runRequest(() => api.listGoals()).then(setOut)}>
+          GET /api/Goals
+        </Button>
+      </BtnRow>
 
       <Field label="id (number)">
-        <input type="number" value={id} onChange={(e) => setId(e.target.value)} />
+        <input className="field__input" type="number" value={id} onChange={(e) => setId(e.target.value)} />
       </Field>
-      <button type="button" onClick={() => runRequest(() => api.getGoal(id)).then(setOut)}>
-        GET /api/Goals/{'{id}'}
-      </button>
+      <BtnRow>
+        <Button variant="secondary" onClick={() => runRequest(() => api.getGoal(id)).then(setOut)}>
+          GET /api/Goals/{'{id}'}
+        </Button>
+      </BtnRow>
 
       <Field label="title">
-        <input value={title} onChange={(e) => setTitle(e.target.value)} />
+        <input className="field__input" value={title} onChange={(e) => setTitle(e.target.value)} />
       </Field>
       <Field label="description">
-        <input value={description} onChange={(e) => setDescription(e.target.value)} />
+        <input className="field__input" value={description} onChange={(e) => setDescription(e.target.value)} />
       </Field>
       <Field label="targetDateUtc (ISO, optional)">
-        <input value={targetDateUtc} onChange={(e) => setTargetDateUtc(e.target.value)} placeholder="2026-12-31T00:00:00Z" />
+        <input
+          className="field__input"
+          value={targetDateUtc}
+          onChange={(e) => setTargetDateUtc(e.target.value)}
+          placeholder="2026-12-31T00:00:00Z"
+        />
       </Field>
-      <button type="button" onClick={() => runRequest(() => api.createGoal(body())).then(setOut)}>
-        POST /api/Goals
-      </button>
+      <BtnRow>
+        <Button variant="primary" onClick={() => runRequest(() => api.createGoal(body())).then(setOut)}>
+          POST /api/Goals
+        </Button>
+      </BtnRow>
 
       <Result data={out.data} error={out.error} />
     </Section>
