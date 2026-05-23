@@ -26,15 +26,22 @@ public static class IdentitySeeder
 
         var adminEmail = config["SeedAdmin:Email"];
         var adminPassword = config["SeedAdmin:Password"];
+        const string adminUserName = "Admin";
         if (!string.IsNullOrWhiteSpace(adminEmail) && !string.IsNullOrWhiteSpace(adminPassword))
         {
             var admin = await userManager.FindByEmailAsync(adminEmail);
             if (admin == null)
             {
-                admin = new AppUser { Id = Guid.NewGuid(), UserName = adminEmail, Email = adminEmail };
+                admin = new AppUser { Id = Guid.NewGuid(), UserName = adminUserName, Email = adminEmail };
                 var created = await userManager.CreateAsync(admin, adminPassword);
                 if (!created.Succeeded)
                     throw new InvalidOperationException(string.Join("; ", created.Errors.Select(e => e.Description)));
+            }
+            else if (!string.Equals(admin.UserName, adminUserName, StringComparison.Ordinal))
+            {
+                var setName = await userManager.SetUserNameAsync(admin, adminUserName);
+                if (!setName.Succeeded)
+                    throw new InvalidOperationException(string.Join("; ", setName.Errors.Select(e => e.Description)));
             }
 
             if (!await userManager.IsInRoleAsync(admin, Roles.Admin))

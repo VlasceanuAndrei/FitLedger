@@ -9,8 +9,27 @@ import { RegisterSection } from './components/RegisterSection';
 import { WorkoutsSection } from './components/WorkoutsSection';
 import { Button } from './components/ui/Button';
 
-const NAV_TABS = ['workouts', 'exercises', 'goals', 'progress', 'admin'];
+const NAV_TABS = ['exercises', 'workouts', 'goals', 'progress', 'admin'];
 const AUTH_TABS = ['login', 'register'];
+
+const TAB_LABELS = {
+  exercises: 'Exercises',
+  workouts: 'Workouts',
+  goals: 'Goals',
+  progress: 'Progress',
+  admin: 'Admin',
+};
+
+function userLabel(me) {
+  const email = me.email ?? me.Email ?? '';
+  const userName = me.userName ?? me.UserName ?? '';
+  return { userName: userName || email, email };
+}
+
+function isAdmin(me) {
+  const roles = me?.roles ?? me?.Roles ?? [];
+  return Array.isArray(roles) && roles.includes('Admin');
+}
 
 export default function App() {
   const [tab, setTab] = useState('exercises');
@@ -25,11 +44,18 @@ export default function App() {
     if (me && AUTH_TABS.includes(tab)) setTab('workouts');
   }, [me, tab]);
 
+  useEffect(() => {
+    if (tab === 'admin' && !isAdmin(me)) setTab('exercises');
+  }, [me, tab]);
+
   const handleLogout = () => {
     clearToken();
     refreshMe();
     setTab('exercises');
   };
+
+  const loggedIn = me ? userLabel(me) : null;
+  const navTabs = NAV_TABS.filter((t) => t !== 'admin' || isAdmin(me));
 
   return (
     <div className="app-shell">
@@ -37,21 +63,23 @@ export default function App() {
         <div className="app-header__inner">
           <span className="app-brand">Fit Ledger</span>
           <nav className="app-nav" aria-label="Main navigation">
-            {NAV_TABS.map((t) => (
+            {navTabs.map((t) => (
               <button
                 key={t}
                 type="button"
                 className={`nav-tab${tab === t ? ' nav-tab--active' : ''}`}
                 onClick={() => setTab(t)}
               >
-                {t}
+                {TAB_LABELS[t] ?? t}
               </button>
             ))}
           </nav>
           <div className="app-user-bar">
-            {me ? (
+            {loggedIn ? (
               <>
-                <span className="app-user">Logged in as {me.email}</span>
+                <span className="app-user">
+                  Logged in as {loggedIn.userName} ({loggedIn.email})
+                </span>
                 <Button variant="outlined" onClick={handleLogout}>
                   Logout
                 </Button>
@@ -76,13 +104,33 @@ export default function App() {
         </div>
       </header>
       <main className="app-main">
-        {!me && tab === 'login' && <LoginSection onAuthChange={refreshMe} />}
+        {!me && tab === 'login' && (
+          <LoginSection onAuthChange={refreshMe} onGoRegister={() => setTab('register')} />
+        )}
         {!me && tab === 'register' && <RegisterSection onAuthChange={refreshMe} />}
-        {tab === 'workouts' && <WorkoutsSection />}
-        {tab === 'exercises' && <ExercisesSection />}
-        {tab === 'goals' && <GoalsSection />}
-        {tab === 'progress' && <ProgressSection />}
-        {tab === 'admin' && <AdminSection />}
+        {tab === 'workouts' && (
+          <WorkoutsSection
+            isLoggedIn={!!me}
+            onLogin={() => setTab('login')}
+            onRegister={() => setTab('register')}
+          />
+        )}
+        {tab === 'exercises' && <ExercisesSection isLoggedIn={!!me} />}
+        {tab === 'goals' && (
+          <GoalsSection
+            isLoggedIn={!!me}
+            onLogin={() => setTab('login')}
+            onRegister={() => setTab('register')}
+          />
+        )}
+        {tab === 'progress' && (
+          <ProgressSection
+            isLoggedIn={!!me}
+            onLogin={() => setTab('login')}
+            onRegister={() => setTab('register')}
+          />
+        )}
+        {tab === 'admin' && isAdmin(me) && <AdminSection />}
       </main>
     </div>
   );

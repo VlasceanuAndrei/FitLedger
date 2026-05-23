@@ -1,3 +1,5 @@
+import { Button } from './ui/Button';
+
 export function Result({ label, data, error }) {
   if (error) {
     return (
@@ -20,6 +22,22 @@ export function Result({ label, data, error }) {
       {label ? `${label}:\n` : ''}
       {JSON.stringify(data, null, 2)}
     </pre>
+  );
+}
+
+export function LoginPrompt({ onLogin, onRegister }) {
+  return (
+    <div className="login-prompt">
+      <p className="section-card__hint">Log in or create an account to see your data.</p>
+      <div className="btn-row">
+        <Button variant="primary" onClick={onLogin}>
+          Login
+        </Button>
+        <Button variant="outlined" onClick={onRegister}>
+          Register
+        </Button>
+      </div>
+    </div>
   );
 }
 

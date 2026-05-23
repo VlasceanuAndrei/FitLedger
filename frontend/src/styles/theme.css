@@ -133,6 +133,39 @@ body {
   letter-spacing: -0.02em;
 }
 
+.section-card__subtitle {
+  margin: 0 0 var(--space-md);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.section-card__hint {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+}
+
+.login-prompt .section-card__hint {
+  margin-bottom: var(--space-md);
+}
+
+.link-button {
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 600;
+  color: var(--color-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.link-button:hover {
+  color: var(--color-secondary-hover);
+}
+
 .section-card__divider {
   border: none;
   border-top: 1px solid var(--color-neutral-border);
@@ -306,4 +339,48 @@ body {
 .result-panel--empty {
   color: var(--color-tertiary);
   font-style: italic;
+}
+
+.data-table-wrap {
+  margin-top: var(--space-lg);
+  overflow-x: auto;
+  border: 1px solid var(--color-neutral-border);
+  border-radius: var(--radius-md);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  background: var(--color-surface);
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-neutral-border);
+}
+
+.data-table th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-tertiary);
+  background: var(--color-neutral);
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tbody tr:hover {
+  background: var(--color-neutral);
+}
+
+.data-table__empty {
+  margin-top: var(--space-lg);
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
 }

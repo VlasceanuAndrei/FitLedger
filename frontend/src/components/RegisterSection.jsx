@@ -47,7 +47,7 @@ export function RegisterSection({ onAuthChange }) {
         </Button>
       </BtnRow>
 
-      <Result data={out.data} error={out.error} />
+      {out.error && <Result error={out.error} />}
     </Section>
   );
 }

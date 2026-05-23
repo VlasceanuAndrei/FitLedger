@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { api } from '../api';
 import { Button } from './ui/Button';
-import { BtnRow, Field, Result, Section, runRequest } from './Result';
+import { BtnRow, Field, LoginPrompt, Result, Section, runRequest } from './Result';
 
-export function ProgressSection() {
+export function ProgressSection({ isLoggedIn, onLogin, onRegister }) {
   const [id, setId] = useState('');
   const [dateUtc, setDateUtc] = useState('');
   const [metric, setMetric] = useState('');
@@ -16,8 +16,16 @@ export function ProgressSection() {
     value: Number(value),
   });
 
+  if (!isLoggedIn) {
+    return (
+      <Section title="Progress">
+        <LoginPrompt onLogin={onLogin} onRegister={onRegister} />
+      </Section>
+    );
+  }
+
   return (
-    <Section title="Progress (authenticated, create only)">
+    <Section title="Progress">
       <BtnRow>
         <Button variant="secondary" onClick={() => runRequest(() => api.listProgress()).then(setOut)}>
           GET /api/Progress

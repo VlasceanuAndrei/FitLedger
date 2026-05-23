@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { api, parseIntList } from '../api';
 import { Button } from './ui/Button';
-import { BtnRow, Field, Result, Section, runRequest } from './Result';
+import { BtnRow, Field, LoginPrompt, Result, Section, runRequest } from './Result';
 
-export function WorkoutsSection() {
+export function WorkoutsSection({ isLoggedIn, onLogin, onRegister }) {
   const [id, setId] = useState('');
   const [name, setName] = useState('');
   const [exerciseIds, setExerciseIds] = useState('');
@@ -11,8 +11,16 @@ export function WorkoutsSection() {
 
   const body = () => ({ name, exerciseIds: parseIntList(exerciseIds) });
 
+  if (!isLoggedIn) {
+    return (
+      <Section title="Workouts">
+        <LoginPrompt onLogin={onLogin} onRegister={onRegister} />
+      </Section>
+    );
+  }
+
   return (
-    <Section title="Workouts (authenticated)">
+    <Section title="Workouts">
       <BtnRow>
         <Button variant="secondary" onClick={() => runRequest(() => api.listWorkouts()).then(setOut)}>
           GET /api/Workouts

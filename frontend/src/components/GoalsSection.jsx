@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { api } from '../api';
 import { Button } from './ui/Button';
-import { BtnRow, Field, Result, Section, runRequest } from './Result';
+import { BtnRow, Field, LoginPrompt, Result, Section, runRequest } from './Result';
 
-export function GoalsSection() {
+export function GoalsSection({ isLoggedIn, onLogin, onRegister }) {
   const [id, setId] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -16,8 +16,16 @@ export function GoalsSection() {
     targetDateUtc: targetDateUtc || null,
   });
 
+  if (!isLoggedIn) {
+    return (
+      <Section title="Goals">
+        <LoginPrompt onLogin={onLogin} onRegister={onRegister} />
+      </Section>
+    );
+  }
+
   return (
-    <Section title="Goals (authenticated, create only)">
+    <Section title="Goals">
       <BtnRow>
         <Button variant="secondary" onClick={() => runRequest(() => api.listGoals()).then(setOut)}>
           GET /api/Goals

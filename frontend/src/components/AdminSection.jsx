@@ -1,19 +1,118 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../api';
 import { Button } from './ui/Button';
-import { BtnRow, Result, Section, runRequest } from './Result';
+import { BtnRow, Divider, Field, Result, Section, runRequest } from './Result';
 
-export function AdminSection() {
-  const [out, setOut] = useState({ data: null, error: null });
+function normalizeUser(row) {
+  const userName = row.userName ?? row.UserName ?? '';
+  const email = row.email ?? row.Email ?? '';
+  const roles = row.roles ?? row.Roles ?? [];
+  return {
+    userName,
+    email,
+    roles: Array.isArray(roles) ? roles.join(', ') : String(roles),
+  };
+}
+
+function UsersTable({ users }) {
+  if (!users.length) {
+    return <p className="data-table__empty">No users found.</p>;
+  }
 
   return (
-    <Section title="Admin (Admin role required)">
+    <div className="data-table-wrap">
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((row, i) => {
+            const user = normalizeUser(row);
+            return (
+              <tr key={row.id ?? row.Id ?? i}>
+                <td>{user.userName}</td>
+                <td>{user.email}</td>
+                <td>{user.roles}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+export function AdminSection() {
+  const [exerciseId, setExerciseId] = useState('');
+  const [exerciseName, setExerciseName] = useState('');
+  const [exerciseOut, setExerciseOut] = useState({ data: null, error: null });
+
+  const [users, setUsers] = useState(null);
+  const [usersError, setUsersError] = useState(null);
+  const [usersLoading, setUsersLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setUsersLoading(true);
+    runRequest(() => api.listAdminUsers()).then((out) => {
+      if (cancelled) return;
+      setUsersError(out.error);
+      setUsers(Array.isArray(out.data) ? out.data : []);
+      setUsersLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  const handleAddExercise = () =>
+    runRequest(() => api.createExercise({ name: exerciseName })).then(setExerciseOut);
+
+  const handleRemoveExercise = () =>
+    runRequest(() => api.deleteExercise(exerciseId)).then(setExerciseOut);
+
+  return (
+    <Section title="Admin">
+      <h3 className="section-card__subtitle">Exercises</h3>
+      <Field label="Exercise name">
+        <input
+          className="field__input"
+          value={exerciseName}
+          onChange={(e) => setExerciseName(e.target.value)}
+        />
+      </Field>
       <BtnRow>
-        <Button variant="secondary" onClick={() => runRequest(() => api.listAdminUsers()).then(setOut)}>
-          GET /api/admin/users
+        <Button variant="primary" onClick={handleAddExercise}>
+          Add exercise
         </Button>
       </BtnRow>
-      <Result data={out.data} error={out.error} />
+
+      <Field label="Exercise id">
+        <input
+          className="field__input"
+          type="number"
+          value={exerciseId}
+          onChange={(e) => setExerciseId(e.target.value)}
+        />
+      </Field>
+      <BtnRow>
+        <Button variant="danger" onClick={handleRemoveExercise}>
+          Remove exercise
+        </Button>
+      </BtnRow>
+
+      {(exerciseOut.data !== null || exerciseOut.error) && (
+        <Result data={exerciseOut.data} error={exerciseOut.error} />
+      )}
+
+      <Divider />
+
+      <h3 className="section-card__subtitle">Registered users</h3>
+      {usersLoading && <p className="data-table__empty">Loading users…</p>}
+      {usersError && <Result error={usersError} />}
+      {!usersLoading && !usersError && users && <UsersTable users={users} />}
     </Section>
   );
 }
