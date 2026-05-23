@@ -19,7 +19,7 @@ public sealed class ProgressService : IProgressService
         return list.Select(ToDto).ToList();
     }
 
-    public async Task<ProgressEntryDto> GetAsync(Guid userId, Guid entryId, CancellationToken ct)
+    public async Task<ProgressEntryDto> GetAsync(Guid userId, int entryId, CancellationToken ct)
     {
         var entry = await _progress.GetForUserAsync(userId, entryId, ct);
         if (entry == null) throw new KeyNotFoundException("Progress entry not found.");
@@ -30,7 +30,6 @@ public sealed class ProgressService : IProgressService
     {
         var entry = new ProgressEntry
         {
-            Id = Guid.NewGuid(),
             UserId = userId,
             DateUtc = request.DateUtc,
             Metric = request.Metric,
@@ -46,4 +45,3 @@ public sealed class ProgressService : IProgressService
     private static ProgressEntryDto ToDto(ProgressEntry e) =>
         new(e.Id, e.DateUtc, e.Metric, e.Value);
 }
-

@@ -24,8 +24,8 @@ public sealed class ProgressController : ControllerBase
         return Ok(await _progress.ListAsync(userId, ct));
     }
 
-    [HttpGet("{id:guid}")]
-    public async Task<ActionResult<ProgressEntryDto>> Get([FromRoute] Guid id, CancellationToken ct)
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<ProgressEntryDto>> Get([FromRoute] int id, CancellationToken ct)
     {
         var userId = CurrentUser.GetUserId(User);
         return Ok(await _progress.GetAsync(userId, id, ct));
@@ -39,4 +39,3 @@ public sealed class ProgressController : ControllerBase
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 }
-

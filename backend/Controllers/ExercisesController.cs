@@ -24,8 +24,8 @@ public sealed class ExercisesController : ControllerBase
         return Ok(await _exercises.ListAsync(ct));
     }
 
-    [HttpGet("{id:guid}")]
-    public async Task<ActionResult<ExerciseDto>> Get([FromRoute] Guid id, CancellationToken ct)
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<ExerciseDto>> Get([FromRoute] int id, CancellationToken ct)
     {
         return Ok(await _exercises.GetAsync(id, ct));
     }
@@ -38,12 +38,11 @@ public sealed class ExercisesController : ControllerBase
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
-    [HttpDelete("{id:guid}")]
+    [HttpDelete("{id:int}")]
     [Authorize(Roles = Roles.Admin)]
-    public async Task<IActionResult> Delete([FromRoute] Guid id, CancellationToken ct)
+    public async Task<IActionResult> Delete([FromRoute] int id, CancellationToken ct)
     {
         await _exercises.DeleteAsync(id, ct);
         return NoContent();
     }
 }
-

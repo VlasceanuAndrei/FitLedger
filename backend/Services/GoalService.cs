@@ -19,7 +19,7 @@ public sealed class GoalService : IGoalService
         return list.Select(ToDto).ToList();
     }
 
-    public async Task<GoalDto> GetAsync(Guid userId, Guid goalId, CancellationToken ct)
+    public async Task<GoalDto> GetAsync(Guid userId, int goalId, CancellationToken ct)
     {
         var goal = await _goals.GetForUserAsync(userId, goalId, ct);
         if (goal == null) throw new KeyNotFoundException("Goal not found.");
@@ -30,7 +30,6 @@ public sealed class GoalService : IGoalService
     {
         var goal = new Goal
         {
-            Id = Guid.NewGuid(),
             UserId = userId,
             Title = request.Title,
             Description = request.Description,
@@ -48,4 +47,3 @@ public sealed class GoalService : IGoalService
     private static GoalDto ToDto(Goal g) =>
         new(g.Id, g.Title, g.Description, g.CreatedAtUtc, g.TargetDateUtc, g.IsCompleted);
 }
-

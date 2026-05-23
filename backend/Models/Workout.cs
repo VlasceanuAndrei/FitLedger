@@ -2,7 +2,7 @@ namespace FitnessTracker.Api.Models;
 
 public class Workout
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
 
     public Guid UserId { get; set; }
@@ -11,4 +11,3 @@ public class Workout
     public ICollection<WorkoutSession> Sessions { get; set; } = new List<WorkoutSession>();
     public ICollection<WorkoutExercise> WorkoutExercises { get; set; } = new List<WorkoutExercise>();
 }
-

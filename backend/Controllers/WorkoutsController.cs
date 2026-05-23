@@ -24,8 +24,8 @@ public sealed class WorkoutsController : ControllerBase
         return Ok(await _workouts.ListAsync(userId, ct));
     }
 
-    [HttpGet("{id:guid}")]
-    public async Task<ActionResult<WorkoutDto>> Get([FromRoute] Guid id, CancellationToken ct)
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<WorkoutDto>> Get([FromRoute] int id, CancellationToken ct)
     {
         var userId = CurrentUser.GetUserId(User);
         return Ok(await _workouts.GetAsync(userId, id, ct));
@@ -39,19 +39,18 @@ public sealed class WorkoutsController : ControllerBase
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
-    [HttpPut("{id:guid}")]
-    public async Task<ActionResult<WorkoutDto>> Update([FromRoute] Guid id, [FromBody] UpdateWorkoutRequest request, CancellationToken ct)
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult<WorkoutDto>> Update([FromRoute] int id, [FromBody] UpdateWorkoutRequest request, CancellationToken ct)
     {
         var userId = CurrentUser.GetUserId(User);
         return Ok(await _workouts.UpdateAsync(userId, id, request, ct));
     }
 
-    [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete([FromRoute] Guid id, CancellationToken ct)
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Delete([FromRoute] int id, CancellationToken ct)
     {
         var userId = CurrentUser.GetUserId(User);
         await _workouts.DeleteAsync(userId, id, ct);
         return NoContent();
     }
 }
-

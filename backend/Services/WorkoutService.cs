@@ -23,7 +23,7 @@ public sealed class WorkoutService : IWorkoutService
         return list.Select(ToDto).ToList();
     }
 
-    public async Task<WorkoutDto> GetAsync(Guid userId, Guid workoutId, CancellationToken ct)
+    public async Task<WorkoutDto> GetAsync(Guid userId, int workoutId, CancellationToken ct)
     {
         var workout = await _workouts.GetForUserAsync(userId, workoutId, ct);
         if (workout == null) throw new KeyNotFoundException("Workout not found.");
@@ -34,7 +34,6 @@ public sealed class WorkoutService : IWorkoutService
     {
         var workout = new Workout
         {
-            Id = Guid.NewGuid(),
             Name = request.Name,
             UserId = userId
         };
@@ -58,14 +57,13 @@ public sealed class WorkoutService : IWorkoutService
         return ToDto(workout);
     }
 
-    public async Task<WorkoutDto> UpdateAsync(Guid userId, Guid workoutId, UpdateWorkoutRequest request, CancellationToken ct)
+    public async Task<WorkoutDto> UpdateAsync(Guid userId, int workoutId, UpdateWorkoutRequest request, CancellationToken ct)
     {
         var workout = await _workouts.GetForUserAsync(userId, workoutId, ct);
         if (workout == null) throw new KeyNotFoundException("Workout not found.");
 
         workout.Name = request.Name;
 
-        // Replace exercise links
         workout.WorkoutExercises.Clear();
         if (request.ExerciseIds.Count > 0)
         {
@@ -84,7 +82,7 @@ public sealed class WorkoutService : IWorkoutService
         return ToDto(workout);
     }
 
-    public async Task DeleteAsync(Guid userId, Guid workoutId, CancellationToken ct)
+    public async Task DeleteAsync(Guid userId, int workoutId, CancellationToken ct)
     {
         var workout = await _workouts.GetForUserAsync(userId, workoutId, ct);
         if (workout == null) throw new KeyNotFoundException("Workout not found.");
@@ -96,4 +94,3 @@ public sealed class WorkoutService : IWorkoutService
     private static WorkoutDto ToDto(Workout w) =>
         new(w.Id, w.Name, w.WorkoutExercises.Select(x => x.ExerciseId).ToList());
 }
-

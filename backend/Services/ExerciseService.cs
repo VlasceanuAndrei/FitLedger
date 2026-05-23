@@ -19,7 +19,7 @@ public sealed class ExerciseService : IExerciseService
         return list.Select(x => new ExerciseDto(x.Id, x.Name)).ToList();
     }
 
-    public async Task<ExerciseDto> GetAsync(Guid id, CancellationToken ct)
+    public async Task<ExerciseDto> GetAsync(int id, CancellationToken ct)
     {
         var exercise = await _exercises.GetByIdAsync(id, ct);
         if (exercise == null) throw new KeyNotFoundException("Exercise not found.");
@@ -35,11 +35,7 @@ public sealed class ExerciseService : IExerciseService
         var existing = await _exercises.GetByNameAsync(name, ct);
         if (existing != null) throw new InvalidOperationException("Exercise already exists.");
 
-        var exercise = new Exercise
-        {
-            Id = Guid.NewGuid(),
-            Name = name
-        };
+        var exercise = new Exercise { Name = name };
 
         await _exercises.AddAsync(exercise, ct);
         await _exercises.SaveChangesAsync(ct);
@@ -47,7 +43,7 @@ public sealed class ExerciseService : IExerciseService
         return new ExerciseDto(exercise.Id, exercise.Name);
     }
 
-    public async Task DeleteAsync(Guid id, CancellationToken ct)
+    public async Task DeleteAsync(int id, CancellationToken ct)
     {
         var exercise = await _exercises.GetByIdAsync(id, ct);
         if (exercise == null) throw new KeyNotFoundException("Exercise not found.");
@@ -62,4 +58,3 @@ public sealed class ExerciseService : IExerciseService
         await _exercises.SaveChangesAsync(ct);
     }
 }
-

@@ -24,6 +24,7 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
         builder.Entity<Workout>(e =>
         {
             e.HasKey(x => x.Id);
+            e.Property(x => x.Id).ValueGeneratedOnAdd();
             e.Property(x => x.Name).HasMaxLength(200).IsRequired();
             e.HasOne(x => x.User)
                 .WithMany(u => u.Workouts)
@@ -34,6 +35,7 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
         builder.Entity<WorkoutSession>(e =>
         {
             e.HasKey(x => x.Id);
+            e.Property(x => x.Id).ValueGeneratedOnAdd();
             e.HasOne(x => x.Workout)
                 .WithMany(w => w.Sessions)
                 .HasForeignKey(x => x.WorkoutId)
@@ -43,6 +45,7 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
         builder.Entity<Exercise>(e =>
         {
             e.HasKey(x => x.Id);
+            e.Property(x => x.Id).ValueGeneratedOnAdd();
             e.Property(x => x.Name).HasMaxLength(200).IsRequired();
             e.HasIndex(x => x.Name).IsUnique();
         });
@@ -61,6 +64,7 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
         builder.Entity<Goal>(e =>
         {
             e.HasKey(x => x.Id);
+            e.Property(x => x.Id).ValueGeneratedOnAdd();
             e.Property(x => x.Title).HasMaxLength(200).IsRequired();
             e.HasOne(x => x.User)
                 .WithMany(u => u.Goals)
@@ -71,6 +75,7 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
         builder.Entity<ProgressEntry>(e =>
         {
             e.HasKey(x => x.Id);
+            e.Property(x => x.Id).ValueGeneratedOnAdd();
             e.Property(x => x.Metric).HasMaxLength(100).IsRequired();
             e.HasOne(x => x.User)
                 .WithMany(u => u.ProgressEntries)
@@ -79,4 +84,3 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
         });
     }
 }
-

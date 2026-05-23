@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { api, parseGuidList } from '../api';
+import { api, parseIntList } from '../api';
 import { Field, Result, Section, runRequest } from './Result';
 
 export function WorkoutsSection() {
@@ -8,7 +8,7 @@ export function WorkoutsSection() {
   const [exerciseIds, setExerciseIds] = useState('');
   const [out, setOut] = useState({ data: null, error: null });
 
-  const body = () => ({ name, exerciseIds: parseGuidList(exerciseIds) });
+  const body = () => ({ name, exerciseIds: parseIntList(exerciseIds) });
 
   return (
     <Section title="Workouts (authenticated)">
@@ -16,8 +16,8 @@ export function WorkoutsSection() {
         GET /api/Workouts
       </button>
 
-      <Field label="id (guid)">
-        <input value={id} onChange={(e) => setId(e.target.value)} />
+      <Field label="id (number)">
+        <input type="number" value={id} onChange={(e) => setId(e.target.value)} />
       </Field>
       <button type="button" onClick={() => runRequest(() => api.getWorkout(id)).then(setOut)}>
         GET /api/Workouts/{'{id}'}
@@ -26,7 +26,7 @@ export function WorkoutsSection() {
       <Field label="name">
         <input value={name} onChange={(e) => setName(e.target.value)} />
       </Field>
-      <Field label="exerciseIds (comma-separated guids)">
+      <Field label="exerciseIds (comma-separated numbers)">
         <input value={exerciseIds} onChange={(e) => setExerciseIds(e.target.value)} />
       </Field>
       <button type="button" onClick={() => runRequest(() => api.createWorkout(body())).then(setOut)}>

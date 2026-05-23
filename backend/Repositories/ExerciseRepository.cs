@@ -16,7 +16,7 @@ public sealed class ExerciseRepository : IExerciseRepository
     public Task<List<Exercise>> ListAsync(CancellationToken ct) =>
         _db.Exercises.AsNoTracking().OrderBy(x => x.Name).ToListAsync(ct);
 
-    public Task<Exercise?> GetByIdAsync(Guid id, CancellationToken ct) =>
+    public Task<Exercise?> GetByIdAsync(int id, CancellationToken ct) =>
         _db.Exercises.FirstOrDefaultAsync(x => x.Id == id, ct);
 
     public Task<Exercise?> GetByNameAsync(string name, CancellationToken ct) =>
@@ -24,7 +24,7 @@ public sealed class ExerciseRepository : IExerciseRepository
             x => x.Name.ToLower() == name.ToLower(),
             ct);
 
-    public Task<bool> HasWorkoutLinksAsync(Guid exerciseId, CancellationToken ct) =>
+    public Task<bool> HasWorkoutLinksAsync(int exerciseId, CancellationToken ct) =>
         _db.WorkoutExercises.AsNoTracking().AnyAsync(x => x.ExerciseId == exerciseId, ct);
 
     public Task AddAsync(Exercise exercise, CancellationToken ct) =>
@@ -35,4 +35,3 @@ public sealed class ExerciseRepository : IExerciseRepository
     public Task SaveChangesAsync(CancellationToken ct) =>
         _db.SaveChangesAsync(ct);
 }
-

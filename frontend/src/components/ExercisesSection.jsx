@@ -13,8 +13,8 @@ export function ExercisesSection() {
         GET /api/Exercises
       </button>
 
-      <Field label="id (guid)">
-        <input value={id} onChange={(e) => setId(e.target.value)} />
+      <Field label="id (number)">
+        <input type="number" value={id} onChange={(e) => setId(e.target.value)} />
       </Field>
       <button type="button" onClick={() => runRequest(() => api.getExercise(id)).then(setOut)}>
         GET /api/Exercises/{'{id}'}

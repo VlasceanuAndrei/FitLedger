@@ -21,7 +21,7 @@ public sealed class WorkoutRepository : IWorkoutRepository
             .OrderBy(x => x.Name)
             .ToListAsync(ct);
 
-    public Task<Workout?> GetForUserAsync(Guid userId, Guid workoutId, CancellationToken ct) =>
+    public Task<Workout?> GetForUserAsync(Guid userId, int workoutId, CancellationToken ct) =>
         _db.Workouts
             .Where(x => x.UserId == userId && x.Id == workoutId)
             .Include(x => x.WorkoutExercises)
@@ -35,4 +35,3 @@ public sealed class WorkoutRepository : IWorkoutRepository
     public Task SaveChangesAsync(CancellationToken ct) =>
         _db.SaveChangesAsync(ct);
 }
-

@@ -50,7 +50,7 @@ public static class IdentitySeeder
                 e => e.Name.ToLower() == trimmed.ToLower(),
                 ct);
             if (exists) continue;
-            db.Exercises.Add(new Exercise { Id = Guid.NewGuid(), Name = trimmed });
+            db.Exercises.Add(new Exercise { Name = trimmed });
             added = true;
         }
 

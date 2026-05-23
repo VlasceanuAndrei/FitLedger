@@ -84,10 +84,12 @@ export const api = {
   listAdminUsers: () => request('/api/admin/users'),
 };
 
-export function parseGuidList(value) {
+export function parseIntList(value) {
   if (!value?.trim()) return [];
   return value
     .split(/[,;\s]+/)
     .map((s) => s.trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .map(Number)
+    .filter((n) => !isNaN(n));
 }

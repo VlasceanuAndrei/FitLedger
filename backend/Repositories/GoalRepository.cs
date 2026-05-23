@@ -16,7 +16,7 @@ public sealed class GoalRepository : IGoalRepository
     public Task<List<Goal>> ListForUserAsync(Guid userId, CancellationToken ct) =>
         _db.Goals.AsNoTracking().Where(x => x.UserId == userId).OrderByDescending(x => x.CreatedAtUtc).ToListAsync(ct);
 
-    public Task<Goal?> GetForUserAsync(Guid userId, Guid goalId, CancellationToken ct) =>
+    public Task<Goal?> GetForUserAsync(Guid userId, int goalId, CancellationToken ct) =>
         _db.Goals.FirstOrDefaultAsync(x => x.UserId == userId && x.Id == goalId, ct);
 
     public Task AddAsync(Goal goal, CancellationToken ct) =>
@@ -25,4 +25,3 @@ public sealed class GoalRepository : IGoalRepository
     public Task SaveChangesAsync(CancellationToken ct) =>
         _db.SaveChangesAsync(ct);
 }
-

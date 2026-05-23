@@ -41,7 +41,7 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddDbContext<FitnessTracker.Api.Data.AppDbContext>(options =>
 {
-    options.UseSqlite(builder.Configuration.GetConnectionString("Default"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Default"));
 });
 
 builder.Services
