@@ -1,16 +1,57 @@
 services:
-  postgres:
+  db:
     image: postgres:16-alpine
-    container_name: fitness-tracker-db
+    container_name: student-${USER:-CHANGE_ME}-db
     environment:
-      POSTGRES_DB: fitness_tracker
-      POSTGRES_USER: fitness
-      POSTGRES_PASSWORD: fitness123
-    ports:
-      - "5433:5432"
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     volumes:
-      - fitness_tracker_data:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - studlab_net
     restart: unless-stopped
 
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: student-${USER:-CHANGE_ME}-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__Default: Host=student-${USER:-CHANGE_ME}-db;Port=5432;Database=${DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}
+      Jwt__Issuer: ${JWT_ISSUER:-FitnessTracker}
+      Jwt__Audience: ${JWT_AUDIENCE:-FitnessTracker}
+      Jwt__Key: ${JWT_KEY}
+      SeedAdmin__Email: ${SEED_ADMIN_EMAIL:-}
+      SeedAdmin__Password: ${SEED_ADMIN_PASSWORD:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "8080"
+    networks:
+      - studlab_net
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: student-${USER:-CHANGE_ME}-frontend
+    depends_on: [api]
+    expose: ["80"]
+    networks: [studlab_net]
+    restart: unless-stopped
+
+networks:
+  studlab_net:
+    external: true
+
 volumes:
-  fitness_tracker_data:
+  db_data:
