@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../api';
 import { Button } from './ui/Button';
 import { BtnRow, Divider, Field, Result, Section, runRequest, validateFields } from './Result';
+import { LIMITS, collectErrors, serverFieldErrors, textError } from '../validation';
 
 const ROLE_OPTIONS = ['User', 'Admin'];
 
@@ -192,8 +193,8 @@ export function AdminSection({ canManageRoles = false }) {
   useEffect(() => { fetchExercises(); }, [fetchExercises]);
 
   const handleAddExercise = () => {
-    const errors = validateFields([
-      ['exerciseName', 'Exercise name is required.', exerciseName.trim()],
+    const errors = collectErrors([
+      ['exerciseName', textError('Exercise name', exerciseName, LIMITS.exerciseName)],
     ]);
     if (Object.keys(errors).length) {
       setAddFieldErrors(errors);
@@ -205,7 +206,13 @@ export function AdminSection({ canManageRoles = false }) {
     runRequest(() => api.createExercise({ name: exerciseName.trim() })).then((out) => {
       setAddOut(out);
       if (out.error) {
-        setAddFormError(out.error);
+        const serverErrors = serverFieldErrors(out.data, ['name']);
+        if (serverErrors.name) {
+          setAddFieldErrors({ exerciseName: serverErrors.name });
+          setAddFormError(null);
+        } else {
+          setAddFormError(out.error);
+        }
       } else {
         fetchExercises();
       }
@@ -240,6 +247,7 @@ export function AdminSection({ canManageRoles = false }) {
       <Field label="Exercise name" required error={addFieldErrors.exerciseName}>
         <input
           className="field__input"
+          maxLength={LIMITS.exerciseName.max}
           value={exerciseName}
           onChange={(e) => {
             setExerciseName(e.target.value);

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { api, setToken } from '../api';
 import { Button } from './ui/Button';
-import { BtnRow, Field, Result, Section, runRequest, validateFields } from './Result';
+import { BtnRow, Field, Result, Section, runRequest } from './Result';
+import { LIMITS, collectErrors, serverFieldErrors, textError } from '../validation';
 
 export function RegisterSection({ onAuthChange, onGoLogin }) {
   const [registerForm, setRegisterForm] = useState({ userName: '', email: '', password: '' });
@@ -19,10 +20,10 @@ export function RegisterSection({ onAuthChange, onGoLogin }) {
   };
 
   const handleRegister = async () => {
-    const errors = validateFields([
-      ['userName', 'Username is required.', registerForm.userName.trim()],
-      ['email', 'Email is required.', registerForm.email.trim()],
-      ['password', 'Password is required.', registerForm.password],
+    const errors = collectErrors([
+      ['userName', textError('Username', registerForm.userName, LIMITS.userName)],
+      ['email', textError('Email', registerForm.email, LIMITS.email)],
+      ['password', textError('Password', registerForm.password, LIMITS.password)],
     ]);
     if (Object.keys(errors).length) {
       setFieldErrors(errors);
@@ -30,10 +31,22 @@ export function RegisterSection({ onAuthChange, onGoLogin }) {
       return;
     }
     setFieldErrors({});
-    const r = await runRequest(() => api.register(registerForm));
+    const r = await runRequest(() =>
+      api.register({
+        userName: registerForm.userName.trim(),
+        email: registerForm.email.trim(),
+        password: registerForm.password,
+      })
+    );
     if (!r.error && r.data?.accessToken) {
       setToken(r.data.accessToken);
       onAuthChange();
+      setFormError(null);
+      return;
+    }
+    const serverErrors = serverFieldErrors(r.data, ['userName', 'email', 'password']);
+    if (Object.keys(serverErrors).length) {
+      setFieldErrors(serverErrors);
       setFormError(null);
       return;
     }
@@ -45,6 +58,7 @@ export function RegisterSection({ onAuthChange, onGoLogin }) {
       <Field label="userName" required error={fieldErrors.userName}>
         <input
           className="field__input"
+          maxLength={LIMITS.userName.max}
           value={registerForm.userName}
           onChange={(e) => setField('userName', e.target.value)}
         />
@@ -53,6 +67,7 @@ export function RegisterSection({ onAuthChange, onGoLogin }) {
         <input
           className="field__input"
           type="email"
+          maxLength={LIMITS.email.max}
           value={registerForm.email}
           onChange={(e) => setField('email', e.target.value)}
         />
@@ -61,6 +76,7 @@ export function RegisterSection({ onAuthChange, onGoLogin }) {
         <input
           className="field__input"
           type="password"
+          maxLength={LIMITS.password.max}
           value={registerForm.password}
           onChange={(e) => setField('password', e.target.value)}
         />

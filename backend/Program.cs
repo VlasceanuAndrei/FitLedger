@@ -50,6 +50,11 @@ builder.Services
     .AddIdentityCore<FitnessTracker.Api.Models.AppUser>(options =>
     {
         options.User.RequireUniqueEmail = true;
+        options.Password.RequiredLength = FitnessTracker.Api.Validation.FieldLimits.PasswordMin;
+        options.Password.RequireDigit = true;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireNonAlphanumeric = true;
     })
     .AddRoles<FitnessTracker.Api.Models.AppRole>()
     .AddEntityFrameworkStores<FitnessTracker.Api.Data.AppDbContext>()

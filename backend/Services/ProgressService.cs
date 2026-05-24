@@ -26,7 +26,7 @@ public sealed class ProgressService : IProgressService
         {
             UserId = userId,
             DateUtc = request.DateUtc,
-            Metric = request.Metric,
+            Metric = request.Metric.Trim(),
             Value = request.Value
         };
 

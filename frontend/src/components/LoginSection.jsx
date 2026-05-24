@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { api, setToken } from '../api';
 import { Button } from './ui/Button';
-import { BtnRow, Field, Result, Section, runRequest, validateFields } from './Result';
+import { BtnRow, Field, Result, Section, runRequest } from './Result';
+import { LIMITS, collectErrors, serverFieldErrors, textError } from '../validation';
+
+const LOGIN_PASSWORD = { max: LIMITS.password.max, trim: false };
 
 export function LoginSection({ onAuthChange, onGoRegister }) {
   const [email, setEmail] = useState('');
@@ -19,9 +22,9 @@ export function LoginSection({ onAuthChange, onGoRegister }) {
   };
 
   const handleLogin = async () => {
-    const errors = validateFields([
-      ['email', 'Email is required.', email.trim()],
-      ['password', 'Password is required.', password],
+    const errors = collectErrors([
+      ['email', textError('Email', email, LIMITS.email)],
+      ['password', textError('Password', password, LOGIN_PASSWORD)],
     ]);
     if (Object.keys(errors).length) {
       setFieldErrors(errors);
@@ -29,10 +32,16 @@ export function LoginSection({ onAuthChange, onGoRegister }) {
       return;
     }
     setFieldErrors({});
-    const r = await runRequest(() => api.login({ email, password }));
+    const r = await runRequest(() => api.login({ email: email.trim(), password }));
     if (!r.error && r.data?.accessToken) {
       setToken(r.data.accessToken);
       onAuthChange();
+      setFormError(null);
+      return;
+    }
+    const serverErrors = serverFieldErrors(r.data, ['email', 'password']);
+    if (Object.keys(serverErrors).length) {
+      setFieldErrors(serverErrors);
       setFormError(null);
       return;
     }
@@ -45,6 +54,7 @@ export function LoginSection({ onAuthChange, onGoRegister }) {
         <input
           className="field__input"
           type="email"
+          maxLength={LIMITS.email.max}
           value={email}
           onChange={(e) => { setEmail(e.target.value); clearField('email'); }}
         />
@@ -53,6 +63,7 @@ export function LoginSection({ onAuthChange, onGoRegister }) {
         <input
           className="field__input"
           type="password"
+          maxLength={LIMITS.password.max}
           value={password}
           onChange={(e) => { setPassword(e.target.value); clearField('password'); }}
         />

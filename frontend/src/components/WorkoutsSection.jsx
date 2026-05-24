@@ -2,6 +2,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../api';
 import { Button } from './ui/Button';
 import { Field, runRequest, validateFields } from './Result';
+import {
+  LIMITS,
+  collectErrors,
+  countError,
+  serverFieldErrors,
+  textError,
+} from '../validation';
 
 function norm(obj, key) {
   if (!obj) return undefined;
@@ -240,8 +247,9 @@ export function WorkoutsSection() {
   };
 
   const handleCreate = async () => {
-    const errors = validateFields([
-      ['name', 'Workout name is required.', createName.trim()],
+    const errors = collectErrors([
+      ['name', textError('Workout name', createName, LIMITS.workoutName)],
+      ['exerciseIds', countError('Exercises', createExIds, LIMITS.workoutExercises)],
     ]);
     if (Object.keys(errors).length) {
       setCreateFieldErrors(errors);
@@ -254,7 +262,9 @@ export function WorkoutsSection() {
     setCreateFormError(null);
     const out = await runRequest(() => api.createWorkout({ name: createName.trim(), exerciseIds: createExIds }));
     if (out.error) {
-      setCreateFormError(out.error);
+      const serverErrors = serverFieldErrors(out.data, ['name', 'exerciseIds']);
+      setCreateFieldErrors(serverErrors);
+      setCreateFormError(Object.keys(serverErrors).length ? null : out.error);
     } else {
       const created = out.data;
       setCreateMsg(`"${norm(created, 'name')}" created successfully.`);
@@ -266,10 +276,13 @@ export function WorkoutsSection() {
   };
 
   const handleUpdate = async () => {
-    const errors = validateFields([
-      ['workoutId', 'Select a workout to update.', updateId],
-      ['name', 'Workout name is required.', updateName.trim()],
-    ]);
+    const errors = {
+      ...validateFields([['workoutId', 'Select a workout to update.', updateId]]),
+      ...collectErrors([
+        ['name', textError('Workout name', updateName, LIMITS.workoutName)],
+        ['exerciseIds', countError('Exercises', updateExIds, LIMITS.workoutExercises)],
+      ]),
+    };
     if (Object.keys(errors).length) {
       setUpdateFieldErrors(errors);
       setUpdateFormError(null);
@@ -281,7 +294,9 @@ export function WorkoutsSection() {
     setUpdateFormError(null);
     const out = await runRequest(() => api.updateWorkout(updateId, { name: updateName.trim(), exerciseIds: updateExIds }));
     if (out.error) {
-      setUpdateFormError(out.error);
+      const serverErrors = serverFieldErrors(out.data, ['name', 'exerciseIds']);
+      setUpdateFieldErrors(serverErrors);
+      setUpdateFormError(Object.keys(serverErrors).length ? null : out.error);
     } else {
       setUpdateMsg('Workout updated successfully.');
       fetchWorkouts();
@@ -372,6 +387,7 @@ export function WorkoutsSection() {
           <input
             className="field__input"
             placeholder="e.g. Morning Push"
+            maxLength={LIMITS.workoutName.max}
             value={createName}
             onChange={(e) => {
               setCreateName(e.target.value);
@@ -394,6 +410,11 @@ export function WorkoutsSection() {
           {createExIds.length > 0 && (
             <p className="workout-selected-count">
               {createExIds.length} exercise{createExIds.length !== 1 ? 's' : ''} selected
+            </p>
+          )}
+          {createFieldErrors.exerciseIds && (
+            <p className="field__error" role="alert">
+              {createFieldErrors.exerciseIds}
             </p>
           )}
         </div>
@@ -430,6 +451,7 @@ export function WorkoutsSection() {
             <Field label="Workout name" required error={updateFieldErrors.name}>
               <input
                 className="field__input"
+                maxLength={LIMITS.workoutName.max}
                 value={updateName}
                 onChange={(e) => {
                   setUpdateName(e.target.value);
@@ -452,6 +474,11 @@ export function WorkoutsSection() {
               {updateExIds.length > 0 && (
                 <p className="workout-selected-count">
                   {updateExIds.length} exercise{updateExIds.length !== 1 ? 's' : ''} selected
+                </p>
+              )}
+              {updateFieldErrors.exerciseIds && (
+                <p className="field__error" role="alert">
+                  {updateFieldErrors.exerciseIds}
                 </p>
               )}
             </div>

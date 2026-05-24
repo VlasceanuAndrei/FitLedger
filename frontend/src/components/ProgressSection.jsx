@@ -1,7 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../api';
 import { Button } from './ui/Button';
-import { Field, runRequest, validateFields } from './Result';
+import { Field, runRequest } from './Result';
+import {
+  LIMITS,
+  collectErrors,
+  dateError,
+  numberError,
+  serverFieldErrors,
+  textError,
+} from '../validation';
 
 function norm(obj, key) {
   if (!obj) return undefined;
@@ -111,9 +119,10 @@ export function ProgressSection() {
   };
 
   const handleCreate = async () => {
-    const errors = validateFields([
-      ['metric', 'Metric is required.', createMetric.trim()],
-      ['value', 'A numeric value is required.', createValue !== '' && !isNaN(Number(createValue))],
+    const errors = collectErrors([
+      ['dateUtc', dateError('Date', createDate)],
+      ['metric', textError('Metric', createMetric, LIMITS.metric)],
+      ['value', numberError('Value', createValue, LIMITS.progressValue)],
     ]);
     if (Object.keys(errors).length) {
       setCreateFieldErrors(errors);
@@ -131,7 +140,9 @@ export function ProgressSection() {
     };
     const out = await runRequest(() => api.createProgress(body));
     if (out.error) {
-      setCreateFormError(out.error);
+      const serverErrors = serverFieldErrors(out.data, ['dateUtc', 'metric', 'value']);
+      setCreateFieldErrors(serverErrors);
+      setCreateFormError(Object.keys(serverErrors).length ? null : out.error);
     } else {
       setCreateMsg(`"${norm(out.data, 'metric')}" entry created successfully.`);
       setCreateDate('');
@@ -174,12 +185,20 @@ export function ProgressSection() {
       <section className="section-card">
         <h2 className="section-card__title">Log Progress</h2>
 
-        <Field label="Date (optional — defaults to today)">
+        <Field label="Date (optional — defaults to today)" error={createFieldErrors.dateUtc}>
           <input
             className="field__input goals-date-input"
             type="date"
             value={createDate}
-            onChange={(e) => setCreateDate(e.target.value)}
+            onChange={(e) => {
+              setCreateDate(e.target.value);
+              setCreateFieldErrors((prev) => {
+                const next = { ...prev };
+                delete next.dateUtc;
+                return next;
+              });
+              setCreateFormError(null);
+            }}
           />
         </Field>
 
@@ -187,6 +206,7 @@ export function ProgressSection() {
           <input
             className="field__input"
             placeholder="e.g. Weight (kg)"
+            maxLength={LIMITS.metric.max}
             value={createMetric}
             onChange={(e) => {
               setCreateMetric(e.target.value);
@@ -205,6 +225,9 @@ export function ProgressSection() {
             className="field__input"
             type="number"
             placeholder="e.g. 75.5"
+            min={LIMITS.progressValue.min}
+            max={LIMITS.progressValue.max}
+            step="0.01"
             value={createValue}
             onChange={(e) => {
               setCreateValue(e.target.value);

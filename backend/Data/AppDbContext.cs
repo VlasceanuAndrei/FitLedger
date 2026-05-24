@@ -55,6 +55,7 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).ValueGeneratedOnAdd();
             e.Property(x => x.Title).HasMaxLength(200).IsRequired();
+            e.Property(x => x.Description).HasMaxLength(FitnessTracker.Api.Validation.FieldLimits.GoalDescriptionMax);
             e.HasOne(x => x.User)
                 .WithMany(u => u.Goals)
                 .HasForeignKey(x => x.UserId)

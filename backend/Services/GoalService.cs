@@ -25,8 +25,8 @@ public sealed class GoalService : IGoalService
         var goal = new Goal
         {
             UserId = userId,
-            Title = request.Title,
-            Description = request.Description,
+            Title = request.Title.Trim(),
+            Description = request.Description?.Trim(),
             TargetDateUtc = request.TargetDateUtc,
             CreatedAtUtc = DateTime.UtcNow,
             IsCompleted = false

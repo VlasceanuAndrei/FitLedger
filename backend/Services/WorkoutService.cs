@@ -35,7 +35,7 @@ public sealed class WorkoutService : IWorkoutService
     {
         var workout = new Workout
         {
-            Name = request.Name,
+            Name = request.Name.Trim(),
             UserId = userId
         };
 
@@ -63,7 +63,7 @@ public sealed class WorkoutService : IWorkoutService
         var workout = await _workouts.GetForUserAsync(userId, workoutId, ct);
         if (workout == null) throw new KeyNotFoundException("Workout not found.");
 
-        workout.Name = request.Name;
+        workout.Name = request.Name.Trim();
 
         workout.WorkoutExercises.Clear();
         if (request.ExerciseIds.Count > 0)

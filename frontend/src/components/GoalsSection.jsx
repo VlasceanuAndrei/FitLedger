@@ -1,7 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../api';
 import { Button } from './ui/Button';
-import { Field, runRequest, validateFields } from './Result';
+import { Field, runRequest } from './Result';
+import {
+  LIMITS,
+  collectErrors,
+  dateError,
+  serverFieldErrors,
+  textError,
+} from '../validation';
 
 function norm(obj, key) {
   if (!obj) return undefined;
@@ -140,8 +147,10 @@ export function GoalsSection() {
   };
 
   const handleCreate = async () => {
-    const errors = validateFields([
-      ['title', 'Title is required.', createTitle.trim()],
+    const errors = collectErrors([
+      ['title', textError('Title', createTitle, LIMITS.goalTitle)],
+      ['description', textError('Description', createDesc, LIMITS.goalDescription)],
+      ['targetDateUtc', dateError('Target date', createDate)],
     ]);
     if (Object.keys(errors).length) {
       setCreateFieldErrors(errors);
@@ -159,7 +168,13 @@ export function GoalsSection() {
     };
     const out = await runRequest(() => api.createGoal(body));
     if (out.error) {
-      setCreateFormError(out.error);
+      const serverErrors = serverFieldErrors(out.data, [
+        'title',
+        'description',
+        'targetDateUtc',
+      ]);
+      setCreateFieldErrors(serverErrors);
+      setCreateFormError(Object.keys(serverErrors).length ? null : out.error);
     } else {
       setCreateMsg(`"${norm(out.data, 'title')}" created successfully.`);
       setCreateTitle('');
@@ -212,6 +227,7 @@ export function GoalsSection() {
           <input
             className="field__input"
             placeholder="e.g. Run 5km"
+            maxLength={LIMITS.goalTitle.max}
             value={createTitle}
             onChange={(e) => {
               setCreateTitle(e.target.value);
@@ -225,21 +241,38 @@ export function GoalsSection() {
           />
         </Field>
 
-        <Field label="Description (optional)">
+        <Field label="Description (optional)" error={createFieldErrors.description}>
           <input
             className="field__input"
             placeholder="e.g. Complete without stopping"
+            maxLength={LIMITS.goalDescription.max}
             value={createDesc}
-            onChange={(e) => setCreateDesc(e.target.value)}
+            onChange={(e) => {
+              setCreateDesc(e.target.value);
+              setCreateFieldErrors((prev) => {
+                const next = { ...prev };
+                delete next.description;
+                return next;
+              });
+              setCreateFormError(null);
+            }}
           />
         </Field>
 
-        <Field label="Target date (optional)">
+        <Field label="Target date (optional)" error={createFieldErrors.targetDateUtc}>
           <input
             className="field__input goals-date-input"
             type="date"
             value={createDate}
-            onChange={(e) => setCreateDate(e.target.value)}
+            onChange={(e) => {
+              setCreateDate(e.target.value);
+              setCreateFieldErrors((prev) => {
+                const next = { ...prev };
+                delete next.targetDateUtc;
+                return next;
+              });
+              setCreateFormError(null);
+            }}
           />
         </Field>
 

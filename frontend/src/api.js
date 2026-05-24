@@ -42,9 +42,11 @@ async function request(path, { method = 'GET', body, auth = true } = {}) {
   }
 
   if (!res.ok) {
-    const err = new Error(
-      typeof data === 'object' && data?.error ? data.error : `HTTP ${res.status}`
-    );
+    const message =
+      typeof data === 'object' && (data?.error || data?.title)
+        ? data.error || data.title
+        : `HTTP ${res.status}`;
+    const err = new Error(message);
     err.status = res.status;
     err.data = data;
     throw err;
