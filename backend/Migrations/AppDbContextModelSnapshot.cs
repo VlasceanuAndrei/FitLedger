@@ -113,18 +113,6 @@ namespace FitnessTracker.Api.Migrations
                 b.ToTable("WorkoutExercises");
             });
 
-            modelBuilder.Entity("FitnessTracker.Api.Models.WorkoutSession", b =>
-            {
-                b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("integer")
-                    .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
-                b.Property<DateTime?>("EndedAtUtc").HasColumnType("timestamp with time zone");
-                b.Property<DateTime>("StartedAtUtc").HasColumnType("timestamp with time zone");
-                b.Property<int>("WorkoutId").HasColumnType("integer");
-                b.HasKey("Id");
-                b.HasIndex("WorkoutId");
-                b.ToTable("WorkoutSessions");
-            });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
             {
                 b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("integer")
@@ -225,16 +213,6 @@ namespace FitnessTracker.Api.Migrations
                 b.Navigation("Workout");
             });
 
-            modelBuilder.Entity("FitnessTracker.Api.Models.WorkoutSession", b =>
-            {
-                b.HasOne("FitnessTracker.Api.Models.Workout", "Workout")
-                    .WithMany("Sessions")
-                    .HasForeignKey("WorkoutId")
-                    .OnDelete(DeleteBehavior.Cascade)
-                    .IsRequired();
-                b.Navigation("Workout");
-            });
-
             modelBuilder.Entity("FitnessTracker.Api.Models.AppUser", b =>
             {
                 b.Navigation("Goals");
@@ -249,7 +227,6 @@ namespace FitnessTracker.Api.Migrations
 
             modelBuilder.Entity("FitnessTracker.Api.Models.Workout", b =>
             {
-                b.Navigation("Sessions");
                 b.Navigation("WorkoutExercises");
             });
 

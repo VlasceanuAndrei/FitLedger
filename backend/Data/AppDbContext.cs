@@ -11,7 +11,6 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
     }
 
     public DbSet<Workout> Workouts => Set<Workout>();
-    public DbSet<WorkoutSession> WorkoutSessions => Set<WorkoutSession>();
     public DbSet<Exercise> Exercises => Set<Exercise>();
     public DbSet<WorkoutExercise> WorkoutExercises => Set<WorkoutExercise>();
     public DbSet<Goal> Goals => Set<Goal>();
@@ -29,16 +28,6 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
             e.HasOne(x => x.User)
                 .WithMany(u => u.Workouts)
                 .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
-
-        builder.Entity<WorkoutSession>(e =>
-        {
-            e.HasKey(x => x.Id);
-            e.Property(x => x.Id).ValueGeneratedOnAdd();
-            e.HasOne(x => x.Workout)
-                .WithMany(w => w.Sessions)
-                .HasForeignKey(x => x.WorkoutId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

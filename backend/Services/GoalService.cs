@@ -20,13 +20,6 @@ public sealed class GoalService : IGoalService
         return list.Select(ToDto).ToList();
     }
 
-    public async Task<GoalDto> GetAsync(Guid userId, int goalId, CancellationToken ct)
-    {
-        var goal = await _goals.GetForUserAsync(userId, goalId, ct);
-        if (goal == null) throw new KeyNotFoundException("Goal not found.");
-        return ToDto(goal);
-    }
-
     public async Task<GoalDto> CreateAsync(Guid userId, CreateGoalRequest request, CancellationToken ct)
     {
         var goal = new Goal

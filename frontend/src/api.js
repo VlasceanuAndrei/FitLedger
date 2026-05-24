@@ -1,10 +1,6 @@
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5150';
+const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:5150';
 
 let accessToken = localStorage.getItem('accessToken') || '';
-
-export function getApiBase() {
-  return API_BASE;
-}
 
 export function getToken() {
   return accessToken;
@@ -69,30 +65,17 @@ export const api = {
   deleteWorkout: (id) => request(`/api/Workouts/${id}`, { method: 'DELETE' }),
 
   listExercises: () => request('/api/Exercises', { auth: false }),
-  getExercise: (id) => request(`/api/Exercises/${id}`),
   createExercise: (body) => request('/api/Exercises', { method: 'POST', body }),
   deleteExercise: (id) => request(`/api/Exercises/${id}`, { method: 'DELETE' }),
 
   listGoals: () => request('/api/Goals'),
-  getGoal: (id) => request(`/api/Goals/${id}`),
   createGoal: (body) => request('/api/Goals', { method: 'POST', body }),
   setGoalCompleted: (id, isCompleted) =>
     request(`/api/Goals/${id}/complete`, { method: 'PATCH', body: { isCompleted } }),
 
   listProgress: () => request('/api/Progress'),
-  getProgress: (id) => request(`/api/Progress/${id}`),
   createProgress: (body) => request('/api/Progress', { method: 'POST', body }),
 
   listAdminUsers: () => request('/api/admin/users'),
   setUserRole: (id, body) => request(`/api/admin/users/${id}/role`, { method: 'PUT', body }),
 };
-
-export function parseIntList(value) {
-  if (!value?.trim()) return [];
-  return value
-    .split(/[,;\s]+/)
-    .map((s) => s.trim())
-    .filter(Boolean)
-    .map(Number)
-    .filter((n) => !isNaN(n));
-}

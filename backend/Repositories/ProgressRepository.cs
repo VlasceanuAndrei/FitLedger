@@ -20,9 +20,6 @@ public sealed class ProgressRepository : IProgressRepository
             .OrderByDescending(x => x.DateUtc)
             .ToListAsync(ct);
 
-    public Task<ProgressEntry?> GetForUserAsync(Guid userId, int entryId, CancellationToken ct) =>
-        _db.ProgressEntries.FirstOrDefaultAsync(x => x.UserId == userId && x.Id == entryId, ct);
-
     public Task AddAsync(ProgressEntry entry, CancellationToken ct) =>
         _db.ProgressEntries.AddAsync(entry, ct).AsTask();
 

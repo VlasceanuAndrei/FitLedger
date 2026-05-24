@@ -20,13 +20,6 @@ public sealed class ExerciseService : IExerciseService
         return list.Select(x => new ExerciseDto(x.Id, x.Name)).ToList();
     }
 
-    public async Task<ExerciseDto> GetAsync(int id, CancellationToken ct)
-    {
-        var exercise = await _exercises.GetByIdAsync(id, ct);
-        if (exercise == null) throw new KeyNotFoundException("Exercise not found.");
-        return new ExerciseDto(exercise.Id, exercise.Name);
-    }
-
     public async Task<ExerciseDto> CreateAsync(CreateExerciseRequest request, CancellationToken ct)
     {
         var name = request.Name.Trim();

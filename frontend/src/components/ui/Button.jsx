@@ -1,7 +1,6 @@
 export function Button({ variant = 'neutral', className = '', children, ...props }) {
   const variantClass = {
     primary: 'btn-primary',
-    secondary: 'btn-secondary',
     neutral: 'btn-neutral',
     outlined: 'btn-outlined',
     danger: 'btn-danger',

@@ -20,13 +20,6 @@ public sealed class ProgressService : IProgressService
         return list.Select(ToDto).ToList();
     }
 
-    public async Task<ProgressEntryDto> GetAsync(Guid userId, int entryId, CancellationToken ct)
-    {
-        var entry = await _progress.GetForUserAsync(userId, entryId, ct);
-        if (entry == null) throw new KeyNotFoundException("Progress entry not found.");
-        return ToDto(entry);
-    }
-
     public async Task<ProgressEntryDto> CreateAsync(Guid userId, CreateProgressEntryRequest request, CancellationToken ct)
     {
         var entry = new ProgressEntry

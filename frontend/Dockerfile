@@ -4,6 +4,8 @@ WORKDIR /src
 COPY package*.json ./
 RUN npm ci
 COPY . .
+ARG VITE_API_BASE=
+ENV VITE_API_BASE=$VITE_API_BASE
 RUN npm run build  # produce dist/<project>/browser/ (Angular 21) sau dist/ (React/Vue)
 
 # Serve static cu nginx alpine

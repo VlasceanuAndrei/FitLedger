@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../api';
 import { Button } from './ui/Button';
-import { Field, Section, runRequest, validateFields } from './Result';
+import { Field, runRequest, validateFields } from './Result';
 
 function norm(obj, key) {
   if (!obj) return undefined;
