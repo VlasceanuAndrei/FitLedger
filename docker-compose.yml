@@ -3,11 +3,11 @@ services:
     image: postgres:16-alpine
     container_name: fitness-tracker-db
     environment:
-      POSTGRES_DB: fitness_tracker
-      POSTGRES_USER: fitness
-      POSTGRES_PASSWORD: fitness123
+      POSTGRES_DB: ${DB_NAME:?set DB_NAME in .env (copy .env.example)}
+      POSTGRES_USER: ${DB_USER:?set DB_USER in .env (copy .env.example)}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env (copy .env.example)}
     ports:
-      - "5433:5432"
+      - "${DB_PORT:-5433}:5432"
     volumes:
       - fitness_tracker_data:/var/lib/postgresql/data
     restart: unless-stopped

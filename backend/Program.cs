@@ -5,8 +5,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using FitnessTracker.Api.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration.AddDotEnv(builder.Environment.ContentRootPath);
+SecretsGuard.Validate(builder.Configuration);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -55,8 +59,7 @@ builder.Services.Configure<FitnessTracker.Api.Services.JwtOptions>(
     builder.Configuration.GetSection(FitnessTracker.Api.Services.JwtOptions.SectionName)
 );
 
-var jwt = builder.Configuration.GetSection(FitnessTracker.Api.Services.JwtOptions.SectionName).Get<FitnessTracker.Api.Services.JwtOptions>()
-          ?? new FitnessTracker.Api.Services.JwtOptions();
+var jwt = builder.Configuration.GetSection(FitnessTracker.Api.Services.JwtOptions.SectionName).Get<FitnessTracker.Api.Services.JwtOptions>()!;
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
