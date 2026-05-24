@@ -1,3 +1,4 @@
+using FitnessTracker.Api.DTOs;
 using FitnessTracker.Api.Data;
 using FitnessTracker.Api.Models;
 using FitnessTracker.Api.Repositories;

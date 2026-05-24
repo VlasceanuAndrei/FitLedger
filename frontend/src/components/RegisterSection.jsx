@@ -1,41 +1,55 @@
 import { useState } from 'react';
 import { api, setToken } from '../api';
 import { Button } from './ui/Button';
-import { BtnRow, Field, Result, Section, runRequest } from './Result';
+import { BtnRow, Field, Result, Section, runRequest, validateFields } from './Result';
 
-export function RegisterSection({ onAuthChange }) {
+export function RegisterSection({ onAuthChange, onGoLogin }) {
   const [registerForm, setRegisterForm] = useState({ userName: '', email: '', password: '' });
-  const [validationErr, setValidationErr] = useState(null);
-  const [out, setOut] = useState({ data: null, error: null });
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [formError, setFormError] = useState(null);
 
   const setField = (key, value) => {
     setRegisterForm((f) => ({ ...f, [key]: value }));
-    setValidationErr(null);
+    setFieldErrors((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+    setFormError(null);
   };
 
   const handleRegister = async () => {
-    if (!registerForm.userName.trim()) { setValidationErr('Username is required.'); return; }
-    if (!registerForm.email.trim()) { setValidationErr('Email is required.'); return; }
-    if (!registerForm.password) { setValidationErr('Password is required.'); return; }
-    setValidationErr(null);
+    const errors = validateFields([
+      ['userName', 'Username is required.', registerForm.userName.trim()],
+      ['email', 'Email is required.', registerForm.email.trim()],
+      ['password', 'Password is required.', registerForm.password],
+    ]);
+    if (Object.keys(errors).length) {
+      setFieldErrors(errors);
+      setFormError(null);
+      return;
+    }
+    setFieldErrors({});
     const r = await runRequest(() => api.register(registerForm));
     if (!r.error && r.data?.accessToken) {
       setToken(r.data.accessToken);
       onAuthChange();
+      setFormError(null);
+      return;
     }
-    setOut(r);
+    setFormError(r.error ?? 'Registration failed.');
   };
 
   return (
     <Section title="Register">
-      <Field label="userName" required>
+      <Field label="userName" required error={fieldErrors.userName}>
         <input
           className="field__input"
           value={registerForm.userName}
           onChange={(e) => setField('userName', e.target.value)}
         />
       </Field>
-      <Field label="email" required>
+      <Field label="email" required error={fieldErrors.email}>
         <input
           className="field__input"
           type="email"
@@ -43,7 +57,7 @@ export function RegisterSection({ onAuthChange }) {
           onChange={(e) => setField('email', e.target.value)}
         />
       </Field>
-      <Field label="password" required>
+      <Field label="password" required error={fieldErrors.password}>
         <input
           className="field__input"
           type="password"
@@ -57,8 +71,14 @@ export function RegisterSection({ onAuthChange }) {
         </Button>
       </BtnRow>
 
-      {validationErr && <Result error={validationErr} />}
-      {!validationErr && out.error && <Result error={out.error} />}
+      <p className="section-card__hint">
+        Already have an account?{' '}
+        <button type="button" className="link-button" onClick={onGoLogin}>
+          Login
+        </button>
+      </p>
+
+      {formError && <Result error={formError} />}
     </Section>
   );
 }

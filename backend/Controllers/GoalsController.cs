@@ -1,6 +1,6 @@
+using FitnessTracker.Api.DTOs;
 using FitnessTracker.Api.Services;
-using FitnessTracker.Api.ViewModels;
-using Microsoft.AspNetCore.Authorization;
+using FitnessTracker.Api.ViewModels;using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FitnessTracker.Api.Controllers;

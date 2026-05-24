@@ -50,16 +50,29 @@ export function Section({ title, children }) {
   );
 }
 
-export function Field({ label, required, children }) {
+export function Field({ label, required, error, children }) {
   return (
-    <label className="field">
+    <label className={`field${error ? ' field--invalid' : ''}`}>
       <span className="field__label">
         {label}
         {required && <span className="field__required"> *</span>}
       </span>
       {children}
+      {error && (
+        <p className="field__error" role="alert">
+          {error}
+        </p>
+      )}
     </label>
   );
+}
+
+export function validateFields(checks) {
+  const errors = {};
+  for (const [key, message, valid] of checks) {
+    if (!valid) errors[key] = message;
+  }
+  return errors;
 }
 
 export function BtnRow({ children }) {

@@ -1,9 +1,9 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using FitnessTracker.Api.DTOs;
 using FitnessTracker.Api.Models;
 using FitnessTracker.Api.Services;
-using FitnessTracker.Api.ViewModels;
-using Microsoft.AspNetCore.Authorization;
+using FitnessTracker.Api.ViewModels;using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,12 +15,18 @@ public sealed class AuthController : ControllerBase
 {
     private readonly IAuthService _auth;
     private readonly UserManager<AppUser> _users;
+    private readonly IPrimaryAdminService _primaryAdmin;
     private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IAuthService auth, UserManager<AppUser> users, ILogger<AuthController> logger)
+    public AuthController(
+        IAuthService auth,
+        UserManager<AppUser> users,
+        IPrimaryAdminService primaryAdmin,
+        ILogger<AuthController> logger)
     {
         _auth = auth;
         _users = users;
+        _primaryAdmin = primaryAdmin;
         _logger = logger;
     }
 
@@ -69,7 +75,8 @@ public sealed class AuthController : ControllerBase
             dbUser = await _users.FindByIdAsync(userId);
         var resolvedUserName = dbUser?.UserName;
 
-        return Ok(new AuthMeResponse(userId, email, resolvedUserName, roles));
+        var canManageRoles = dbUser != null && _primaryAdmin.IsPrimaryAdmin(dbUser);
+        return Ok(new AuthMeResponse(userId, email, resolvedUserName, roles, canManageRoles));
     }
 }
 

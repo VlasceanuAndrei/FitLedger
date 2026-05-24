@@ -1,3 +1,4 @@
+using FitnessTracker.Api.DTOs;
 using FitnessTracker.Api.ViewModels;
 
 namespace FitnessTracker.Api.Services;

@@ -21,13 +21,36 @@ function isAdmin(me) {
   return Array.isArray(roles) && roles.includes('Admin');
 }
 
+function ProtectedRoute({ me, authReady, children }) {
+  if (!authReady) return null;
+  if (!me) return <Navigate to="/login" replace />;
+  return children;
+}
+
+function AdminRoute({ me, authReady }) {
+  if (!authReady) return null;
+  if (!me) return <Navigate to="/login" replace />;
+  if (!isAdmin(me)) return <Navigate to="/exercises" replace />;
+  return <AdminSection canManageRoles={!!(me.canManageRoles ?? me.CanManageRoles)} />;
+}
+
 export default function App() {
   const [me, setMe] = useState(null);
+  const [authReady, setAuthReady] = useState(false);
   const navigate = useNavigate();
 
   const refreshMe = useCallback(async () => {
-    if (!getToken()) { setMe(null); return; }
-    try { setMe(await api.me()); } catch { setMe(null); }
+    if (!getToken()) {
+      setMe(null);
+      setAuthReady(true);
+      return;
+    }
+    try {
+      setMe(await api.me());
+    } catch {
+      setMe(null);
+    }
+    setAuthReady(true);
   }, []);
 
   useEffect(() => { refreshMe(); }, [refreshMe]);
@@ -98,31 +121,25 @@ export default function App() {
           <Route
             path="/workouts"
             element={
-              <WorkoutsSection
-                isLoggedIn={!!me}
-                onLogin={() => navigate('/login')}
-                onRegister={() => navigate('/register')}
-              />
+              <ProtectedRoute me={me} authReady={authReady}>
+                <WorkoutsSection />
+              </ProtectedRoute>
             }
           />
           <Route
             path="/goals"
             element={
-              <GoalsSection
-                isLoggedIn={!!me}
-                onLogin={() => navigate('/login')}
-                onRegister={() => navigate('/register')}
-              />
+              <ProtectedRoute me={me} authReady={authReady}>
+                <GoalsSection />
+              </ProtectedRoute>
             }
           />
           <Route
             path="/progress"
             element={
-              <ProgressSection
-                isLoggedIn={!!me}
-                onLogin={() => navigate('/login')}
-                onRegister={() => navigate('/register')}
-              />
+              <ProtectedRoute me={me} authReady={authReady}>
+                <ProgressSection />
+              </ProtectedRoute>
             }
           />
           <Route
@@ -141,14 +158,14 @@ export default function App() {
               me ? (
                 <Navigate to="/exercises" replace />
               ) : (
-                <RegisterSection onAuthChange={refreshMe} />
+                <RegisterSection
+                  onAuthChange={refreshMe}
+                  onGoLogin={() => navigate('/login')}
+                />
               )
             }
           />
-          <Route
-            path="/admin"
-            element={isAdmin(me) ? <AdminSection /> : <Navigate to="/exercises" replace />}
-          />
+          <Route path="/admin" element={<AdminRoute me={me} authReady={authReady} />} />
           <Route path="*" element={<Navigate to="/exercises" replace />} />
         </Routes>
       </main>

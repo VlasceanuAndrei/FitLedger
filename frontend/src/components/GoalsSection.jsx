@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../api';
 import { Button } from './ui/Button';
-import { Field, LoginPrompt, Section, runRequest } from './Result';
+import { Field, Section, runRequest, validateFields } from './Result';
 
 function norm(obj, key) {
   if (!obj) return undefined;
@@ -82,13 +82,13 @@ function GoalDetail({ goal, onToggleComplete, toggling }) {
   );
 }
 
-function Feedback({ success, error }) {
-  if (error) return <p className="workouts-feedback workouts-feedback--error">{error}</p>;
+function Feedback({ success, formError }) {
+  if (formError) return <p className="workouts-feedback workouts-feedback--error">{formError}</p>;
   if (success) return <p className="workouts-feedback workouts-feedback--success">{success}</p>;
   return null;
 }
 
-export function GoalsSection({ isLoggedIn, onLogin, onRegister }) {
+export function GoalsSection() {
   const [goals, setGoals] = useState([]);
   const [listLoading, setListLoading] = useState(false);
   const [listError, setListError] = useState(null);
@@ -100,7 +100,8 @@ export function GoalsSection({ isLoggedIn, onLogin, onRegister }) {
   const [createDesc, setCreateDesc] = useState('');
   const [createDate, setCreateDate] = useState('');
   const [createMsg, setCreateMsg] = useState(null);
-  const [createErr, setCreateErr] = useState(null);
+  const [createFieldErrors, setCreateFieldErrors] = useState({});
+  const [createFormError, setCreateFormError] = useState(null);
   const [creating, setCreating] = useState(false);
   const [togglingComplete, setTogglingComplete] = useState(false);
 
@@ -116,9 +117,7 @@ export function GoalsSection({ isLoggedIn, onLogin, onRegister }) {
     setListLoading(false);
   }, []);
 
-  useEffect(() => {
-    if (isLoggedIn) fetchGoals();
-  }, [isLoggedIn, fetchGoals]);
+  useEffect(() => { fetchGoals(); }, [fetchGoals]);
 
   const handleSelect = (id) => {
     if (id === null) { setSelectedId(null); setDetailData(null); return; }
@@ -141,8 +140,18 @@ export function GoalsSection({ isLoggedIn, onLogin, onRegister }) {
   };
 
   const handleCreate = async () => {
-    if (!createTitle.trim()) { setCreateErr('Title is required.'); return; }
-    setCreating(true); setCreateMsg(null); setCreateErr(null);
+    const errors = validateFields([
+      ['title', 'Title is required.', createTitle.trim()],
+    ]);
+    if (Object.keys(errors).length) {
+      setCreateFieldErrors(errors);
+      setCreateFormError(null);
+      return;
+    }
+    setCreateFieldErrors({});
+    setCreating(true);
+    setCreateMsg(null);
+    setCreateFormError(null);
     const body = {
       title: createTitle.trim(),
       description: createDesc.trim() || null,
@@ -150,7 +159,7 @@ export function GoalsSection({ isLoggedIn, onLogin, onRegister }) {
     };
     const out = await runRequest(() => api.createGoal(body));
     if (out.error) {
-      setCreateErr(out.error);
+      setCreateFormError(out.error);
     } else {
       setCreateMsg(`"${norm(out.data, 'title')}" created successfully.`);
       setCreateTitle('');
@@ -160,14 +169,6 @@ export function GoalsSection({ isLoggedIn, onLogin, onRegister }) {
     }
     setCreating(false);
   };
-
-  if (!isLoggedIn) {
-    return (
-      <Section title="Goals">
-        <LoginPrompt onLogin={onLogin} onRegister={onRegister} />
-      </Section>
-    );
-  }
 
   return (
     <div className="workouts-page">
@@ -207,12 +208,20 @@ export function GoalsSection({ isLoggedIn, onLogin, onRegister }) {
       <section className="section-card">
         <h2 className="section-card__title">Create Goal</h2>
 
-        <Field label="Title" required>
+        <Field label="Title" required error={createFieldErrors.title}>
           <input
             className="field__input"
             placeholder="e.g. Run 5km"
             value={createTitle}
-            onChange={(e) => { setCreateTitle(e.target.value); setCreateErr(null); }}
+            onChange={(e) => {
+              setCreateTitle(e.target.value);
+              setCreateFieldErrors((prev) => {
+                const next = { ...prev };
+                delete next.title;
+                return next;
+              });
+              setCreateFormError(null);
+            }}
           />
         </Field>
 
@@ -240,7 +249,7 @@ export function GoalsSection({ isLoggedIn, onLogin, onRegister }) {
           </Button>
         </div>
 
-        <Feedback success={createMsg} error={createErr} />
+        <Feedback success={createMsg} formError={createFormError} />
       </section>
     </div>
   );

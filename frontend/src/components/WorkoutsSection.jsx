@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../api';
 import { Button } from './ui/Button';
-import { Field, LoginPrompt, Section, runRequest } from './Result';
+import { Field, Section, runRequest, validateFields } from './Result';
 
 function norm(obj, key) {
   if (!obj) return undefined;
@@ -134,8 +134,8 @@ function WorkoutDetail({ workout, exercises, loading }) {
   );
 }
 
-function Feedback({ success, error }) {
-  if (error) return <p className="workouts-feedback workouts-feedback--error">{error}</p>;
+function Feedback({ success, formError }) {
+  if (formError) return <p className="workouts-feedback workouts-feedback--error">{formError}</p>;
   if (success) return <p className="workouts-feedback workouts-feedback--success">{success}</p>;
   return null;
 }
@@ -157,7 +157,7 @@ function WorkoutSelect({ workouts, value, onChange, placeholder = '— Choose a 
   );
 }
 
-export function WorkoutsSection({ isLoggedIn, onLogin, onRegister }) {
+export function WorkoutsSection() {
   const [workouts, setWorkouts] = useState([]);
   const [exercises, setExercises] = useState([]);
   const [listLoading, setListLoading] = useState(false);
@@ -170,20 +170,23 @@ export function WorkoutsSection({ isLoggedIn, onLogin, onRegister }) {
   const [createName, setCreateName] = useState('');
   const [createExIds, setCreateExIds] = useState([]);
   const [createMsg, setCreateMsg] = useState(null);
-  const [createErr, setCreateErr] = useState(null);
+  const [createFieldErrors, setCreateFieldErrors] = useState({});
+  const [createFormError, setCreateFormError] = useState(null);
   const [creating, setCreating] = useState(false);
 
   const [updateId, setUpdateId] = useState('');
   const [updateName, setUpdateName] = useState('');
   const [updateExIds, setUpdateExIds] = useState([]);
   const [updateMsg, setUpdateMsg] = useState(null);
-  const [updateErr, setUpdateErr] = useState(null);
+  const [updateFieldErrors, setUpdateFieldErrors] = useState({});
+  const [updateFormError, setUpdateFormError] = useState(null);
   const [updating, setUpdating] = useState(false);
 
   const [deleteId, setDeleteId] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleteMsg, setDeleteMsg] = useState(null);
-  const [deleteErr, setDeleteErr] = useState(null);
+  const [deleteFieldErrors, setDeleteFieldErrors] = useState({});
+  const [deleteFormError, setDeleteFormError] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
   const fetchWorkouts = useCallback(async () => {
@@ -209,11 +212,9 @@ export function WorkoutsSection({ isLoggedIn, onLogin, onRegister }) {
   }, []);
 
   useEffect(() => {
-    if (isLoggedIn) {
-      fetchWorkouts();
-      fetchExercises();
-    }
-  }, [isLoggedIn, fetchWorkouts, fetchExercises]);
+    fetchWorkouts();
+    fetchExercises();
+  }, [fetchWorkouts, fetchExercises]);
 
   useEffect(() => {
     if (selectedId === null) { setDetailData(null); return; }
@@ -228,7 +229,8 @@ export function WorkoutsSection({ isLoggedIn, onLogin, onRegister }) {
   const handleSelectUpdate = (id) => {
     setUpdateId(id);
     setUpdateMsg(null);
-    setUpdateErr(null);
+    setUpdateFieldErrors({});
+    setUpdateFormError(null);
     if (!id) { setUpdateName(''); setUpdateExIds([]); return; }
     const w = workouts.find((w) => String(norm(w, 'id')) === String(id));
     if (w) {
@@ -238,11 +240,21 @@ export function WorkoutsSection({ isLoggedIn, onLogin, onRegister }) {
   };
 
   const handleCreate = async () => {
-    if (!createName.trim()) { setCreateErr('Workout name is required.'); return; }
-    setCreating(true); setCreateMsg(null); setCreateErr(null);
+    const errors = validateFields([
+      ['name', 'Workout name is required.', createName.trim()],
+    ]);
+    if (Object.keys(errors).length) {
+      setCreateFieldErrors(errors);
+      setCreateFormError(null);
+      return;
+    }
+    setCreateFieldErrors({});
+    setCreating(true);
+    setCreateMsg(null);
+    setCreateFormError(null);
     const out = await runRequest(() => api.createWorkout({ name: createName.trim(), exerciseIds: createExIds }));
     if (out.error) {
-      setCreateErr(out.error);
+      setCreateFormError(out.error);
     } else {
       const created = out.data;
       setCreateMsg(`"${norm(created, 'name')}" created successfully.`);
@@ -254,12 +266,22 @@ export function WorkoutsSection({ isLoggedIn, onLogin, onRegister }) {
   };
 
   const handleUpdate = async () => {
-    if (!updateId) { setUpdateErr('Select a workout to update.'); return; }
-    if (!updateName.trim()) { setUpdateErr('Workout name is required.'); return; }
-    setUpdating(true); setUpdateMsg(null); setUpdateErr(null);
+    const errors = validateFields([
+      ['workoutId', 'Select a workout to update.', updateId],
+      ['name', 'Workout name is required.', updateName.trim()],
+    ]);
+    if (Object.keys(errors).length) {
+      setUpdateFieldErrors(errors);
+      setUpdateFormError(null);
+      return;
+    }
+    setUpdateFieldErrors({});
+    setUpdating(true);
+    setUpdateMsg(null);
+    setUpdateFormError(null);
     const out = await runRequest(() => api.updateWorkout(updateId, { name: updateName.trim(), exerciseIds: updateExIds }));
     if (out.error) {
-      setUpdateErr(out.error);
+      setUpdateFormError(out.error);
     } else {
       setUpdateMsg('Workout updated successfully.');
       fetchWorkouts();
@@ -274,16 +296,27 @@ export function WorkoutsSection({ isLoggedIn, onLogin, onRegister }) {
     setDeleteId(id);
     setDeleteConfirm(false);
     setDeleteMsg(null);
-    setDeleteErr(null);
+    setDeleteFieldErrors({});
+    setDeleteFormError(null);
   };
 
   const handleDelete = async () => {
-    if (!deleteId) { setDeleteErr('Select a workout to delete.'); return; }
+    const errors = validateFields([
+      ['workoutId', 'Select a workout to delete.', deleteId],
+    ]);
+    if (Object.keys(errors).length) {
+      setDeleteFieldErrors(errors);
+      setDeleteFormError(null);
+      return;
+    }
     if (!deleteConfirm) { setDeleteConfirm(true); return; }
-    setDeleting(true); setDeleteMsg(null); setDeleteErr(null);
+    setDeleteFieldErrors({});
+    setDeleting(true);
+    setDeleteMsg(null);
+    setDeleteFormError(null);
     const out = await runRequest(() => api.deleteWorkout(deleteId));
     if (out.error) {
-      setDeleteErr(out.error);
+      setDeleteFormError(out.error);
     } else {
       setDeleteMsg('Workout deleted successfully.');
       if (selectedId === Number(deleteId)) { setSelectedId(null); setDetailData(null); }
@@ -294,14 +327,6 @@ export function WorkoutsSection({ isLoggedIn, onLogin, onRegister }) {
     }
     setDeleting(false);
   };
-
-  if (!isLoggedIn) {
-    return (
-      <Section title="Workouts">
-        <LoginPrompt onLogin={onLogin} onRegister={onRegister} />
-      </Section>
-    );
-  }
 
   const deleteTarget = workouts.find((w) => String(norm(w, 'id')) === String(deleteId));
 
@@ -343,12 +368,20 @@ export function WorkoutsSection({ isLoggedIn, onLogin, onRegister }) {
       <section className="section-card">
         <h2 className="section-card__title">Create Workout</h2>
 
-        <Field label="Workout name" required>
+        <Field label="Workout name" required error={createFieldErrors.name}>
           <input
             className="field__input"
             placeholder="e.g. Morning Push"
             value={createName}
-            onChange={(e) => { setCreateName(e.target.value); setCreateErr(null); }}
+            onChange={(e) => {
+              setCreateName(e.target.value);
+              setCreateFieldErrors((prev) => {
+                const next = { ...prev };
+                delete next.name;
+                return next;
+              });
+              setCreateFormError(null);
+            }}
           />
         </Field>
 
@@ -371,23 +404,42 @@ export function WorkoutsSection({ isLoggedIn, onLogin, onRegister }) {
           </Button>
         </div>
 
-        <Feedback success={createMsg} error={createErr} />
+        <Feedback success={createMsg} formError={createFormError} />
       </section>
 
       <section className="section-card">
         <h2 className="section-card__title">Update Workout</h2>
 
-        <Field label="Select workout" required>
-          <WorkoutSelect workouts={workouts} value={updateId} onChange={handleSelectUpdate} />
+        <Field label="Select workout" required error={updateFieldErrors.workoutId}>
+          <WorkoutSelect
+            workouts={workouts}
+            value={updateId}
+            onChange={(id) => {
+              handleSelectUpdate(id);
+              setUpdateFieldErrors((prev) => {
+                const next = { ...prev };
+                delete next.workoutId;
+                return next;
+              });
+            }}
+          />
         </Field>
 
         {updateId && (
           <>
-            <Field label="Workout name" required>
+            <Field label="Workout name" required error={updateFieldErrors.name}>
               <input
                 className="field__input"
                 value={updateName}
-                onChange={(e) => { setUpdateName(e.target.value); setUpdateErr(null); }}
+                onChange={(e) => {
+                  setUpdateName(e.target.value);
+                  setUpdateFieldErrors((prev) => {
+                    const next = { ...prev };
+                    delete next.name;
+                    return next;
+                  });
+                  setUpdateFormError(null);
+                }}
               />
             </Field>
 
@@ -412,13 +464,13 @@ export function WorkoutsSection({ isLoggedIn, onLogin, onRegister }) {
           </>
         )}
 
-        <Feedback success={updateMsg} error={updateErr} />
+        <Feedback success={updateMsg} formError={updateFormError} />
       </section>
 
       <section className="section-card">
         <h2 className="section-card__title">Delete Workout</h2>
 
-        <Field label="Select workout" required>
+        <Field label="Select workout" required error={deleteFieldErrors.workoutId}>
           <WorkoutSelect workouts={workouts} value={deleteId} onChange={handleDeleteSelect} />
         </Field>
 
@@ -446,7 +498,7 @@ export function WorkoutsSection({ isLoggedIn, onLogin, onRegister }) {
           </div>
         )}
 
-        <Feedback success={deleteMsg} error={deleteErr} />
+        <Feedback success={deleteMsg} formError={deleteFormError} />
       </section>
 
     </div>

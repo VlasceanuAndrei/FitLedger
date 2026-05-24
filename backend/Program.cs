@@ -8,8 +8,6 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -118,10 +116,10 @@ builder.Services.AddScoped<FitnessTracker.Api.Services.IWorkoutService, FitnessT
 builder.Services.AddScoped<FitnessTracker.Api.Services.IExerciseService, FitnessTracker.Api.Services.ExerciseService>();
 builder.Services.AddScoped<FitnessTracker.Api.Services.IGoalService, FitnessTracker.Api.Services.GoalService>();
 builder.Services.AddScoped<FitnessTracker.Api.Services.IProgressService, FitnessTracker.Api.Services.ProgressService>();
+builder.Services.AddSingleton<FitnessTracker.Api.Services.IPrimaryAdminService, FitnessTracker.Api.Services.PrimaryAdminService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 app.UseMiddleware<FitnessTracker.Api.Services.GlobalExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())

@@ -84,6 +84,7 @@ export const api = {
   createProgress: (body) => request('/api/Progress', { method: 'POST', body }),
 
   listAdminUsers: () => request('/api/admin/users'),
+  setUserRole: (id, body) => request(`/api/admin/users/${id}/role`, { method: 'PUT', body }),
 };
 
 export function parseIntList(value) {

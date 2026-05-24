@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../api';
 import { Button } from './ui/Button';
-import { Field, LoginPrompt, Section, runRequest } from './Result';
+import { Field, Section, runRequest, validateFields } from './Result';
 
 function norm(obj, key) {
   if (!obj) return undefined;
@@ -67,13 +67,13 @@ function ProgressDetail({ entry }) {
   );
 }
 
-function Feedback({ success, error }) {
-  if (error) return <p className="workouts-feedback workouts-feedback--error">{error}</p>;
+function Feedback({ success, formError }) {
+  if (formError) return <p className="workouts-feedback workouts-feedback--error">{formError}</p>;
   if (success) return <p className="workouts-feedback workouts-feedback--success">{success}</p>;
   return null;
 }
 
-export function ProgressSection({ isLoggedIn, onLogin, onRegister }) {
+export function ProgressSection() {
   const [entries, setEntries] = useState([]);
   const [listLoading, setListLoading] = useState(false);
   const [listError, setListError] = useState(null);
@@ -85,7 +85,8 @@ export function ProgressSection({ isLoggedIn, onLogin, onRegister }) {
   const [createMetric, setCreateMetric] = useState('');
   const [createValue, setCreateValue] = useState('');
   const [createMsg, setCreateMsg] = useState(null);
-  const [createErr, setCreateErr] = useState(null);
+  const [createFieldErrors, setCreateFieldErrors] = useState({});
+  const [createFormError, setCreateFormError] = useState(null);
   const [creating, setCreating] = useState(false);
 
   const fetchEntries = useCallback(async () => {
@@ -100,9 +101,7 @@ export function ProgressSection({ isLoggedIn, onLogin, onRegister }) {
     setListLoading(false);
   }, []);
 
-  useEffect(() => {
-    if (isLoggedIn) fetchEntries();
-  }, [isLoggedIn, fetchEntries]);
+  useEffect(() => { fetchEntries(); }, [fetchEntries]);
 
   const handleSelect = (id) => {
     if (id === null) { setSelectedId(null); setDetailData(null); return; }
@@ -112,9 +111,19 @@ export function ProgressSection({ isLoggedIn, onLogin, onRegister }) {
   };
 
   const handleCreate = async () => {
-    if (!createMetric.trim()) { setCreateErr('Metric is required.'); return; }
-    if (createValue === '' || isNaN(Number(createValue))) { setCreateErr('A numeric value is required.'); return; }
-    setCreating(true); setCreateMsg(null); setCreateErr(null);
+    const errors = validateFields([
+      ['metric', 'Metric is required.', createMetric.trim()],
+      ['value', 'A numeric value is required.', createValue !== '' && !isNaN(Number(createValue))],
+    ]);
+    if (Object.keys(errors).length) {
+      setCreateFieldErrors(errors);
+      setCreateFormError(null);
+      return;
+    }
+    setCreateFieldErrors({});
+    setCreating(true);
+    setCreateMsg(null);
+    setCreateFormError(null);
     const body = {
       dateUtc: createDate ? new Date(createDate).toISOString() : new Date().toISOString(),
       metric: createMetric.trim(),
@@ -122,7 +131,7 @@ export function ProgressSection({ isLoggedIn, onLogin, onRegister }) {
     };
     const out = await runRequest(() => api.createProgress(body));
     if (out.error) {
-      setCreateErr(out.error);
+      setCreateFormError(out.error);
     } else {
       setCreateMsg(`"${norm(out.data, 'metric')}" entry created successfully.`);
       setCreateDate('');
@@ -132,14 +141,6 @@ export function ProgressSection({ isLoggedIn, onLogin, onRegister }) {
     }
     setCreating(false);
   };
-
-  if (!isLoggedIn) {
-    return (
-      <Section title="Progress">
-        <LoginPrompt onLogin={onLogin} onRegister={onRegister} />
-      </Section>
-    );
-  }
 
   return (
     <div className="workouts-page">
@@ -182,22 +183,38 @@ export function ProgressSection({ isLoggedIn, onLogin, onRegister }) {
           />
         </Field>
 
-        <Field label="Metric" required>
+        <Field label="Metric" required error={createFieldErrors.metric}>
           <input
             className="field__input"
             placeholder="e.g. Weight (kg)"
             value={createMetric}
-            onChange={(e) => { setCreateMetric(e.target.value); setCreateErr(null); }}
+            onChange={(e) => {
+              setCreateMetric(e.target.value);
+              setCreateFieldErrors((prev) => {
+                const next = { ...prev };
+                delete next.metric;
+                return next;
+              });
+              setCreateFormError(null);
+            }}
           />
         </Field>
 
-        <Field label="Value" required>
+        <Field label="Value" required error={createFieldErrors.value}>
           <input
             className="field__input"
             type="number"
             placeholder="e.g. 75.5"
             value={createValue}
-            onChange={(e) => { setCreateValue(e.target.value); setCreateErr(null); }}
+            onChange={(e) => {
+              setCreateValue(e.target.value);
+              setCreateFieldErrors((prev) => {
+                const next = { ...prev };
+                delete next.value;
+                return next;
+              });
+              setCreateFormError(null);
+            }}
           />
         </Field>
 
@@ -207,7 +224,7 @@ export function ProgressSection({ isLoggedIn, onLogin, onRegister }) {
           </Button>
         </div>
 
-        <Feedback success={createMsg} error={createErr} />
+        <Feedback success={createMsg} formError={createFormError} />
       </section>
     </div>
   );

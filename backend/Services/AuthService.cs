@@ -1,3 +1,4 @@
+using FitnessTracker.Api.DTOs;
 using FitnessTracker.Api.Models;
 using FitnessTracker.Api.ViewModels;
 using Microsoft.AspNetCore.Identity;
