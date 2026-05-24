@@ -6,9 +6,13 @@ import { BtnRow, Field, Result, Section, runRequest } from './Result';
 export function LoginSection({ onAuthChange, onGoRegister }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [validationErr, setValidationErr] = useState(null);
   const [out, setOut] = useState({ data: null, error: null });
 
   const handleLogin = async () => {
+    if (!email.trim()) { setValidationErr('Email is required.'); return; }
+    if (!password) { setValidationErr('Password is required.'); return; }
+    setValidationErr(null);
     const r = await runRequest(() => api.login({ email, password }));
     if (!r.error && r.data?.accessToken) {
       setToken(r.data.accessToken);
@@ -19,20 +23,20 @@ export function LoginSection({ onAuthChange, onGoRegister }) {
 
   return (
     <Section title="Login">
-      <Field label="email">
+      <Field label="email" required>
         <input
           className="field__input"
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => { setEmail(e.target.value); setValidationErr(null); }}
         />
       </Field>
-      <Field label="password">
+      <Field label="password" required>
         <input
           className="field__input"
           type="password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => { setPassword(e.target.value); setValidationErr(null); }}
         />
       </Field>
       <BtnRow>
@@ -48,7 +52,8 @@ export function LoginSection({ onAuthChange, onGoRegister }) {
         </button>
       </p>
 
-      {out.error && <Result error={out.error} />}
+      {validationErr && <Result error={validationErr} />}
+      {!validationErr && out.error && <Result error={out.error} />}
     </Section>
   );
 }

@@ -189,6 +189,11 @@ body {
   letter-spacing: 0.04em;
 }
 
+.field__required {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
 .field__input {
   display: block;
   width: 100%;
@@ -300,6 +305,7 @@ body {
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   cursor: pointer;
+  text-decoration: none;
   transition: background 0.15s, color 0.15s;
 }
 
@@ -700,4 +706,47 @@ select.field__input {
 .goals-date-input {
   max-width: 200px;
   cursor: pointer;
+}
+
+.goal-detail__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-sm);
+}
+
+.goal-detail__header .workout-detail__name {
+  margin: 0;
+}
+
+.goal-done-btn {
+  flex-shrink: 0;
+  padding: 0.375rem 0.75rem;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-tertiary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-neutral-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.goal-done-btn:hover:not(:disabled) {
+  border-color: #9ae6b4;
+  color: #276749;
+  background: #f0fff4;
+}
+
+.goal-done-btn--active {
+  color: #276749;
+  background: #f0fff4;
+  border-color: #9ae6b4;
+}
+
+.goal-done-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

@@ -44,6 +44,15 @@ public sealed class GoalService : IGoalService
         return ToDto(goal);
     }
 
+    public async Task<GoalDto> SetCompletedAsync(Guid userId, int goalId, bool isCompleted, CancellationToken ct)
+    {
+        var goal = await _goals.GetForUserAsync(userId, goalId, ct);
+        if (goal == null) throw new KeyNotFoundException("Goal not found.");
+        goal.IsCompleted = isCompleted;
+        await _goals.SaveChangesAsync(ct);
+        return ToDto(goal);
+    }
+
     private static GoalDto ToDto(Goal g) =>
         new(g.Id, g.Title, g.Description, g.CreatedAtUtc, g.TargetDateUtc, g.IsCompleted);
 }

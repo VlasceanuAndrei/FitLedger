@@ -38,4 +38,14 @@ public sealed class GoalsController : ControllerBase
         var created = await _goals.CreateAsync(userId, request, ct);
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
+
+    [HttpPatch("{id:int}/complete")]
+    public async Task<ActionResult<GoalDto>> SetCompleted(
+        [FromRoute] int id,
+        [FromBody] SetGoalCompletedRequest request,
+        CancellationToken ct)
+    {
+        var userId = CurrentUser.GetUserId(User);
+        return Ok(await _goals.SetCompletedAsync(userId, id, request.IsCompleted, ct));
+    }
 }

@@ -343,7 +343,7 @@ export function WorkoutsSection({ isLoggedIn, onLogin, onRegister }) {
       <section className="section-card">
         <h2 className="section-card__title">Create Workout</h2>
 
-        <Field label="Workout name">
+        <Field label="Workout name" required>
           <input
             className="field__input"
             placeholder="e.g. Morning Push"
@@ -377,13 +377,13 @@ export function WorkoutsSection({ isLoggedIn, onLogin, onRegister }) {
       <section className="section-card">
         <h2 className="section-card__title">Update Workout</h2>
 
-        <Field label="Select workout">
+        <Field label="Select workout" required>
           <WorkoutSelect workouts={workouts} value={updateId} onChange={handleSelectUpdate} />
         </Field>
 
         {updateId && (
           <>
-            <Field label="Workout name">
+            <Field label="Workout name" required>
               <input
                 className="field__input"
                 value={updateName}
@@ -418,7 +418,7 @@ export function WorkoutsSection({ isLoggedIn, onLogin, onRegister }) {
       <section className="section-card">
         <h2 className="section-card__title">Delete Workout</h2>
 
-        <Field label="Select workout">
+        <Field label="Select workout" required>
           <WorkoutSelect workouts={workouts} value={deleteId} onChange={handleDeleteSelect} />
         </Field>
 

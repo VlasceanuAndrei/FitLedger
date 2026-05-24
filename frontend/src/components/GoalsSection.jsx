@@ -51,14 +51,26 @@ function GoalsTable({ goals, loading, selectedId, onSelect }) {
   );
 }
 
-function GoalDetail({ goal }) {
+function GoalDetail({ goal, onToggleComplete, toggling }) {
   if (!goal) return null;
+  const done = norm(goal, 'isCompleted');
+  const id = norm(goal, 'id');
   return (
-    <div className="workout-detail">
-      <p className="workout-detail__name">
-        {norm(goal, 'title')}
-        <span className="workout-detail__id"> #{norm(goal, 'id')}</span>
-      </p>
+    <div className="workout-detail goal-detail">
+      <div className="goal-detail__header">
+        <p className="workout-detail__name">
+          {norm(goal, 'title')}
+          <span className="workout-detail__id"> #{id}</span>
+        </p>
+        <button
+          type="button"
+          className={`goal-done-btn${done ? ' goal-done-btn--active' : ''}`}
+          disabled={toggling}
+          onClick={() => onToggleComplete(id, !done)}
+        >
+          ✓ Done
+        </button>
+      </div>
       {norm(goal, 'description') && (
         <p style={{ margin: '0 0 0.5rem', fontSize: '0.9375rem' }}>{norm(goal, 'description')}</p>
       )}
@@ -90,6 +102,7 @@ export function GoalsSection({ isLoggedIn, onLogin, onRegister }) {
   const [createMsg, setCreateMsg] = useState(null);
   const [createErr, setCreateErr] = useState(null);
   const [creating, setCreating] = useState(false);
+  const [togglingComplete, setTogglingComplete] = useState(false);
 
   const fetchGoals = useCallback(async () => {
     setListLoading(true);
@@ -112,6 +125,19 @@ export function GoalsSection({ isLoggedIn, onLogin, onRegister }) {
     setSelectedId(id);
     const g = goals.find((g) => norm(g, 'id') === id);
     setDetailData(g ?? null);
+  };
+
+  const handleToggleComplete = async (id, isCompleted) => {
+    setTogglingComplete(true);
+    const out = await runRequest(() => api.setGoalCompleted(id, isCompleted));
+    if (!out.error) {
+      const updated = out.data;
+      setGoals((prev) =>
+        prev.map((g) => (norm(g, 'id') === id ? updated : g))
+      );
+      setDetailData(updated);
+    }
+    setTogglingComplete(false);
   };
 
   const handleCreate = async () => {
@@ -169,13 +195,19 @@ export function GoalsSection({ isLoggedIn, onLogin, onRegister }) {
           />
         )}
 
-        {selectedId !== null && <GoalDetail goal={detailData} />}
+        {selectedId !== null && (
+          <GoalDetail
+            goal={detailData}
+            onToggleComplete={handleToggleComplete}
+            toggling={togglingComplete}
+          />
+        )}
       </section>
 
       <section className="section-card">
         <h2 className="section-card__title">Create Goal</h2>
 
-        <Field label="Title">
+        <Field label="Title" required>
           <input
             className="field__input"
             placeholder="e.g. Run 5km"

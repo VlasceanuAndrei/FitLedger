@@ -50,10 +50,13 @@ export function Section({ title, children }) {
   );
 }
 
-export function Field({ label, children }) {
+export function Field({ label, required, children }) {
   return (
     <label className="field">
-      <span className="field__label">{label}</span>
+      <span className="field__label">
+        {label}
+        {required && <span className="field__required"> *</span>}
+      </span>
       {children}
     </label>
   );

@@ -76,6 +76,8 @@ export const api = {
   listGoals: () => request('/api/Goals'),
   getGoal: (id) => request(`/api/Goals/${id}`),
   createGoal: (body) => request('/api/Goals', { method: 'POST', body }),
+  setGoalCompleted: (id, isCompleted) =>
+    request(`/api/Goals/${id}/complete`, { method: 'PATCH', body: { isCompleted } }),
 
   listProgress: () => request('/api/Progress'),
   getProgress: (id) => request(`/api/Progress/${id}`),

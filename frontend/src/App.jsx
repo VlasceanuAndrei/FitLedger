@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { NavLink, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import { api, clearToken, getToken } from './api';
 import { AdminSection } from './components/AdminSection';
 import { ExercisesSection } from './components/ExercisesSection';
@@ -8,17 +9,6 @@ import { ProgressSection } from './components/ProgressSection';
 import { RegisterSection } from './components/RegisterSection';
 import { WorkoutsSection } from './components/WorkoutsSection';
 import { Button } from './components/ui/Button';
-
-const NAV_TABS = ['exercises', 'workouts', 'goals', 'progress', 'admin'];
-const AUTH_TABS = ['login', 'register'];
-
-const TAB_LABELS = {
-  exercises: 'Exercises',
-  workouts: 'Workouts',
-  goals: 'Goals',
-  progress: 'Progress',
-  admin: 'Admin',
-};
 
 function userLabel(me) {
   const email = me.email ?? me.Email ?? '';
@@ -32,30 +22,31 @@ function isAdmin(me) {
 }
 
 export default function App() {
-  const [tab, setTab] = useState('exercises');
   const [me, setMe] = useState(null);
+  const navigate = useNavigate();
+
   const refreshMe = useCallback(async () => {
     if (!getToken()) { setMe(null); return; }
     try { setMe(await api.me()); } catch { setMe(null); }
   }, []);
+
   useEffect(() => { refreshMe(); }, [refreshMe]);
-
-  useEffect(() => {
-    if (me && AUTH_TABS.includes(tab)) setTab('workouts');
-  }, [me, tab]);
-
-  useEffect(() => {
-    if (tab === 'admin' && !isAdmin(me)) setTab('exercises');
-  }, [me, tab]);
 
   const handleLogout = () => {
     clearToken();
     refreshMe();
-    setTab('exercises');
+    navigate('/exercises');
   };
 
   const loggedIn = me ? userLabel(me) : null;
-  const navTabs = NAV_TABS.filter((t) => t !== 'admin' || isAdmin(me));
+
+  const navLinks = [
+    { to: '/exercises', label: 'Exercises' },
+    { to: '/workouts', label: 'Workouts' },
+    { to: '/goals', label: 'Goals' },
+    { to: '/progress', label: 'Progress' },
+    ...(isAdmin(me) ? [{ to: '/admin', label: 'Admin' }] : []),
+  ];
 
   return (
     <div className="app-shell">
@@ -63,15 +54,14 @@ export default function App() {
         <div className="app-header__inner">
           <span className="app-brand">Fit Ledger</span>
           <nav className="app-nav" aria-label="Main navigation">
-            {navTabs.map((t) => (
-              <button
-                key={t}
-                type="button"
-                className={`nav-tab${tab === t ? ' nav-tab--active' : ''}`}
-                onClick={() => setTab(t)}
+            {navLinks.map(({ to, label }) => (
+              <NavLink
+                key={to}
+                to={to}
+                className={({ isActive }) => `nav-tab${isActive ? ' nav-tab--active' : ''}`}
               >
-                {TAB_LABELS[t] ?? t}
-              </button>
+                {label}
+              </NavLink>
             ))}
           </nav>
           <div className="app-user-bar">
@@ -86,51 +76,81 @@ export default function App() {
               </>
             ) : (
               <div className="header-auth">
-                <Button
-                  variant={tab === 'login' ? 'primary' : 'outlined'}
-                  onClick={() => setTab('login')}
-                >
-                  Login
-                </Button>
-                <Button
-                  variant={tab === 'register' ? 'primary' : 'outlined'}
-                  onClick={() => setTab('register')}
-                >
-                  Register
-                </Button>
+                <NavLink to="/login">
+                  {({ isActive }) => (
+                    <Button variant={isActive ? 'primary' : 'outlined'}>Login</Button>
+                  )}
+                </NavLink>
+                <NavLink to="/register">
+                  {({ isActive }) => (
+                    <Button variant={isActive ? 'primary' : 'outlined'}>Register</Button>
+                  )}
+                </NavLink>
               </div>
             )}
           </div>
         </div>
       </header>
       <main className="app-main">
-        {!me && tab === 'login' && (
-          <LoginSection onAuthChange={refreshMe} onGoRegister={() => setTab('register')} />
-        )}
-        {!me && tab === 'register' && <RegisterSection onAuthChange={refreshMe} />}
-        {tab === 'workouts' && (
-          <WorkoutsSection
-            isLoggedIn={!!me}
-            onLogin={() => setTab('login')}
-            onRegister={() => setTab('register')}
+        <Routes>
+          <Route path="/" element={<Navigate to="/exercises" replace />} />
+          <Route path="/exercises" element={<ExercisesSection />} />
+          <Route
+            path="/workouts"
+            element={
+              <WorkoutsSection
+                isLoggedIn={!!me}
+                onLogin={() => navigate('/login')}
+                onRegister={() => navigate('/register')}
+              />
+            }
           />
-        )}
-        {tab === 'exercises' && <ExercisesSection />}
-        {tab === 'goals' && (
-          <GoalsSection
-            isLoggedIn={!!me}
-            onLogin={() => setTab('login')}
-            onRegister={() => setTab('register')}
+          <Route
+            path="/goals"
+            element={
+              <GoalsSection
+                isLoggedIn={!!me}
+                onLogin={() => navigate('/login')}
+                onRegister={() => navigate('/register')}
+              />
+            }
           />
-        )}
-        {tab === 'progress' && (
-          <ProgressSection
-            isLoggedIn={!!me}
-            onLogin={() => setTab('login')}
-            onRegister={() => setTab('register')}
+          <Route
+            path="/progress"
+            element={
+              <ProgressSection
+                isLoggedIn={!!me}
+                onLogin={() => navigate('/login')}
+                onRegister={() => navigate('/register')}
+              />
+            }
           />
-        )}
-        {tab === 'admin' && isAdmin(me) && <AdminSection />}
+          <Route
+            path="/login"
+            element={
+              me ? (
+                <Navigate to="/exercises" replace />
+              ) : (
+                <LoginSection onAuthChange={refreshMe} onGoRegister={() => navigate('/register')} />
+              )
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              me ? (
+                <Navigate to="/exercises" replace />
+              ) : (
+                <RegisterSection onAuthChange={refreshMe} />
+              )
+            }
+          />
+          <Route
+            path="/admin"
+            element={isAdmin(me) ? <AdminSection /> : <Navigate to="/exercises" replace />}
+          />
+          <Route path="*" element={<Navigate to="/exercises" replace />} />
+        </Routes>
       </main>
     </div>
   );

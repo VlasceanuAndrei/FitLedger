@@ -50,6 +50,7 @@ export function AdminSection() {
   const [exerciseId, setExerciseId] = useState('');
   const [exerciseName, setExerciseName] = useState('');
   const [exerciseOut, setExerciseOut] = useState({ data: null, error: null });
+  const [exerciseValidationErr, setExerciseValidationErr] = useState(null);
 
   const [users, setUsers] = useState(null);
   const [usersError, setUsersError] = useState(null);
@@ -67,20 +68,26 @@ export function AdminSection() {
     return () => { cancelled = true; };
   }, []);
 
-  const handleAddExercise = () =>
-    runRequest(() => api.createExercise({ name: exerciseName })).then(setExerciseOut);
+  const handleAddExercise = () => {
+    if (!exerciseName.trim()) { setExerciseValidationErr('Exercise name is required.'); return; }
+    setExerciseValidationErr(null);
+    runRequest(() => api.createExercise({ name: exerciseName.trim() })).then(setExerciseOut);
+  };
 
-  const handleRemoveExercise = () =>
+  const handleRemoveExercise = () => {
+    if (!exerciseId) { setExerciseValidationErr('Exercise ID is required.'); return; }
+    setExerciseValidationErr(null);
     runRequest(() => api.deleteExercise(exerciseId)).then(setExerciseOut);
+  };
 
   return (
     <Section title="Admin">
       <h3 className="section-card__subtitle">Exercises</h3>
-      <Field label="Exercise name">
+      <Field label="Exercise name" required>
         <input
           className="field__input"
           value={exerciseName}
-          onChange={(e) => setExerciseName(e.target.value)}
+          onChange={(e) => { setExerciseName(e.target.value); setExerciseValidationErr(null); }}
         />
       </Field>
       <BtnRow>
@@ -89,12 +96,12 @@ export function AdminSection() {
         </Button>
       </BtnRow>
 
-      <Field label="Exercise id">
+      <Field label="Exercise id" required>
         <input
           className="field__input"
           type="number"
           value={exerciseId}
-          onChange={(e) => setExerciseId(e.target.value)}
+          onChange={(e) => { setExerciseId(e.target.value); setExerciseValidationErr(null); }}
         />
       </Field>
       <BtnRow>
@@ -103,7 +110,8 @@ export function AdminSection() {
         </Button>
       </BtnRow>
 
-      {(exerciseOut.data !== null || exerciseOut.error) && (
+      {exerciseValidationErr && <Result error={exerciseValidationErr} />}
+      {!exerciseValidationErr && (exerciseOut.data !== null || exerciseOut.error) && (
         <Result data={exerciseOut.data} error={exerciseOut.error} />
       )}
 

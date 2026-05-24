@@ -182,7 +182,7 @@ export function ProgressSection({ isLoggedIn, onLogin, onRegister }) {
           />
         </Field>
 
-        <Field label="Metric">
+        <Field label="Metric" required>
           <input
             className="field__input"
             placeholder="e.g. Weight (kg)"
@@ -191,7 +191,7 @@ export function ProgressSection({ isLoggedIn, onLogin, onRegister }) {
           />
         </Field>
 
-        <Field label="Value">
+        <Field label="Value" required>
           <input
             className="field__input"
             type="number"
