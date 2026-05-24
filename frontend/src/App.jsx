@@ -115,13 +115,7 @@ export default function App() {
             onRegister={() => setTab('register')}
           />
         )}
-        {tab === 'exercises' && (
-          <ExercisesSection
-            isLoggedIn={!!me}
-            onLogin={() => setTab('login')}
-            onRegister={() => setTab('register')}
-          />
-        )}
+        {tab === 'exercises' && <ExercisesSection />}
         {tab === 'goals' && (
           <GoalsSection
             isLoggedIn={!!me}

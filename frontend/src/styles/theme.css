@@ -68,7 +68,7 @@ body {
   width: 100%;
   padding: var(--space-md) var(--space-lg);
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: var(--space-md);
 }
@@ -694,5 +694,10 @@ select.field__input {
   background-repeat: no-repeat;
   background-position: right 0.875rem center;
   padding-right: 2.5rem;
+  cursor: pointer;
+}
+
+.goals-date-input {
+  max-width: 200px;
   cursor: pointer;
 }

@@ -1,20 +1,139 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { api } from '../api';
 import { Button } from './ui/Button';
-import { BtnRow, Field, LoginPrompt, Result, Section, runRequest } from './Result';
+import { Field, LoginPrompt, Section, runRequest } from './Result';
+
+function norm(obj, key) {
+  if (!obj) return undefined;
+  return obj[key] !== undefined ? obj[key] : obj[key[0].toUpperCase() + key.slice(1)];
+}
+
+function formatDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function GoalsTable({ goals, loading, selectedId, onSelect }) {
+  if (loading) return <p className="data-table__empty">Loading goals…</p>;
+  if (!goals.length) return <p className="data-table__empty">No goals registered yet.</p>;
+
+  return (
+    <div className="workouts-table-wrap">
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Target date</th>
+            <th>Done</th>
+          </tr>
+        </thead>
+        <tbody>
+          {goals.map((g) => {
+            const id = norm(g, 'id');
+            const isSel = selectedId === id;
+            return (
+              <tr
+                key={id}
+                className={`workouts-table__row${isSel ? ' workouts-table__row--selected' : ''}`}
+                onClick={() => onSelect(isSel ? null : id)}
+              >
+                <td className="exercises-table__id">{id}</td>
+                <td>{norm(g, 'title')}</td>
+                <td>{formatDate(norm(g, 'targetDateUtc'))}</td>
+                <td>{norm(g, 'isCompleted') ? '✓' : '—'}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function GoalDetail({ goal }) {
+  if (!goal) return null;
+  return (
+    <div className="workout-detail">
+      <p className="workout-detail__name">
+        {norm(goal, 'title')}
+        <span className="workout-detail__id"> #{norm(goal, 'id')}</span>
+      </p>
+      {norm(goal, 'description') && (
+        <p style={{ margin: '0 0 0.5rem', fontSize: '0.9375rem' }}>{norm(goal, 'description')}</p>
+      )}
+      <p className="workout-detail__label">Target date</p>
+      <p style={{ margin: '0 0 0.5rem', fontSize: '0.9375rem' }}>{formatDate(norm(goal, 'targetDateUtc'))}</p>
+      <p className="workout-detail__label">Created</p>
+      <p style={{ margin: 0, fontSize: '0.9375rem' }}>{formatDate(norm(goal, 'createdAtUtc'))}</p>
+    </div>
+  );
+}
+
+function Feedback({ success, error }) {
+  if (error) return <p className="workouts-feedback workouts-feedback--error">{error}</p>;
+  if (success) return <p className="workouts-feedback workouts-feedback--success">{success}</p>;
+  return null;
+}
 
 export function GoalsSection({ isLoggedIn, onLogin, onRegister }) {
-  const [id, setId] = useState('');
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [targetDateUtc, setTargetDateUtc] = useState('');
-  const [out, setOut] = useState({ data: null, error: null });
+  const [goals, setGoals] = useState([]);
+  const [listLoading, setListLoading] = useState(false);
+  const [listError, setListError] = useState(null);
 
-  const body = () => ({
-    title,
-    description: description || null,
-    targetDateUtc: targetDateUtc || null,
-  });
+  const [selectedId, setSelectedId] = useState(null);
+  const [detailData, setDetailData] = useState(null);
+
+  const [createTitle, setCreateTitle] = useState('');
+  const [createDesc, setCreateDesc] = useState('');
+  const [createDate, setCreateDate] = useState('');
+  const [createMsg, setCreateMsg] = useState(null);
+  const [createErr, setCreateErr] = useState(null);
+  const [creating, setCreating] = useState(false);
+
+  const fetchGoals = useCallback(async () => {
+    setListLoading(true);
+    setListError(null);
+    const out = await runRequest(() => api.listGoals());
+    if (out.error) {
+      setListError(out.error);
+    } else {
+      setGoals(Array.isArray(out.data) ? out.data : []);
+    }
+    setListLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (isLoggedIn) fetchGoals();
+  }, [isLoggedIn, fetchGoals]);
+
+  const handleSelect = (id) => {
+    if (id === null) { setSelectedId(null); setDetailData(null); return; }
+    setSelectedId(id);
+    const g = goals.find((g) => norm(g, 'id') === id);
+    setDetailData(g ?? null);
+  };
+
+  const handleCreate = async () => {
+    if (!createTitle.trim()) { setCreateErr('Title is required.'); return; }
+    setCreating(true); setCreateMsg(null); setCreateErr(null);
+    const body = {
+      title: createTitle.trim(),
+      description: createDesc.trim() || null,
+      targetDateUtc: createDate ? new Date(createDate).toISOString() : null,
+    };
+    const out = await runRequest(() => api.createGoal(body));
+    if (out.error) {
+      setCreateErr(out.error);
+    } else {
+      setCreateMsg(`"${norm(out.data, 'title')}" created successfully.`);
+      setCreateTitle('');
+      setCreateDesc('');
+      setCreateDate('');
+      fetchGoals();
+    }
+    setCreating(false);
+  };
 
   if (!isLoggedIn) {
     return (
@@ -25,43 +144,72 @@ export function GoalsSection({ isLoggedIn, onLogin, onRegister }) {
   }
 
   return (
-    <Section title="Goals">
-      <BtnRow>
-        <Button variant="secondary" onClick={() => runRequest(() => api.listGoals()).then(setOut)}>
-          GET /api/Goals
-        </Button>
-      </BtnRow>
+    <div className="workouts-page">
+      <section className="section-card">
+        <div className="workouts-list-header">
+          <div>
+            <h2 className="section-card__title">Your Goals</h2>
+            {goals.length > 0 && (
+              <p className="section-card__hint">Click a row to view its details.</p>
+            )}
+          </div>
+          <Button variant="neutral" onClick={fetchGoals} disabled={listLoading}>
+            {listLoading ? 'Loading…' : 'Refresh'}
+          </Button>
+        </div>
 
-      <Field label="id (number)">
-        <input className="field__input" type="number" value={id} onChange={(e) => setId(e.target.value)} />
-      </Field>
-      <BtnRow>
-        <Button variant="secondary" onClick={() => runRequest(() => api.getGoal(id)).then(setOut)}>
-          GET /api/Goals/{'{id}'}
-        </Button>
-      </BtnRow>
+        {listError && <p className="workouts-feedback workouts-feedback--error">{listError}</p>}
 
-      <Field label="title">
-        <input className="field__input" value={title} onChange={(e) => setTitle(e.target.value)} />
-      </Field>
-      <Field label="description">
-        <input className="field__input" value={description} onChange={(e) => setDescription(e.target.value)} />
-      </Field>
-      <Field label="targetDateUtc (ISO, optional)">
-        <input
-          className="field__input"
-          value={targetDateUtc}
-          onChange={(e) => setTargetDateUtc(e.target.value)}
-          placeholder="2026-12-31T00:00:00Z"
-        />
-      </Field>
-      <BtnRow>
-        <Button variant="primary" onClick={() => runRequest(() => api.createGoal(body())).then(setOut)}>
-          POST /api/Goals
-        </Button>
-      </BtnRow>
+        {!listError && (
+          <GoalsTable
+            goals={goals}
+            loading={listLoading}
+            selectedId={selectedId}
+            onSelect={handleSelect}
+          />
+        )}
 
-      <Result data={out.data} error={out.error} />
-    </Section>
+        {selectedId !== null && <GoalDetail goal={detailData} />}
+      </section>
+
+      <section className="section-card">
+        <h2 className="section-card__title">Create Goal</h2>
+
+        <Field label="Title">
+          <input
+            className="field__input"
+            placeholder="e.g. Run 5km"
+            value={createTitle}
+            onChange={(e) => { setCreateTitle(e.target.value); setCreateErr(null); }}
+          />
+        </Field>
+
+        <Field label="Description (optional)">
+          <input
+            className="field__input"
+            placeholder="e.g. Complete without stopping"
+            value={createDesc}
+            onChange={(e) => setCreateDesc(e.target.value)}
+          />
+        </Field>
+
+        <Field label="Target date (optional)">
+          <input
+            className="field__input goals-date-input"
+            type="date"
+            value={createDate}
+            onChange={(e) => setCreateDate(e.target.value)}
+          />
+        </Field>
+
+        <div className="btn-row">
+          <Button variant="primary" onClick={handleCreate} disabled={creating}>
+            {creating ? 'Creating…' : 'Create Goal'}
+          </Button>
+        </div>
+
+        <Feedback success={createMsg} error={createErr} />
+      </section>
+    </div>
   );
 }
