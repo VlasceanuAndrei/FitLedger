@@ -1,7 +1,8 @@
 using FitnessTracker.Api.DTOs;
 using FitnessTracker.Api.Models;
 using FitnessTracker.Api.Services;
-using FitnessTracker.Api.ViewModels;using Microsoft.AspNetCore.Authorization;
+using FitnessTracker.Api.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

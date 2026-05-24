@@ -146,7 +146,6 @@ export function AdminSection({ canManageRoles = false }) {
   const [addOut, setAddOut] = useState({ data: null, error: null });
   const [addFieldErrors, setAddFieldErrors] = useState({});
   const [addFormError, setAddFormError] = useState(null);
-  const [removeOut, setRemoveOut] = useState({ data: null, error: null });
   const [removeFieldErrors, setRemoveFieldErrors] = useState({});
   const [removeFormError, setRemoveFormError] = useState(null);
 
@@ -225,10 +224,10 @@ export function AdminSection({ canManageRoles = false }) {
     setRemoveFieldErrors({});
     setRemoveFormError(null);
     runRequest(() => api.deleteExercise(selectedExerciseId)).then((out) => {
-      setRemoveOut(out);
       if (out.error) {
         setRemoveFormError(out.error);
       } else {
+        setRemoveFormError(null);
         setSelectedExerciseId(null);
         fetchExercises();
       }
@@ -311,9 +310,8 @@ export function AdminSection({ canManageRoles = false }) {
         </Button>
       </BtnRow>
 
-      {removeFormError && <Result error={removeFormError} />}
-      {!removeFormError && removeOut.data !== null && (
-        <Result data={removeOut.data} />
+      {removeFormError && (
+        <p className="workouts-feedback workouts-feedback--error">{removeFormError}</p>
       )}
 
       <Divider />
