@@ -33,6 +33,8 @@ public sealed class WorkoutService : IWorkoutService
 
     public async Task<WorkoutDto> CreateAsync(Guid userId, CreateWorkoutRequest request, CancellationToken ct)
     {
+        var exerciseIds = await ResolveExerciseIdsAsync(request.ExerciseIds, ct);
+
         var workout = new Workout
         {
             Name = request.Name.Trim(),
@@ -41,17 +43,9 @@ public sealed class WorkoutService : IWorkoutService
 
         await _workouts.AddAsync(workout, ct);
 
-        if (request.ExerciseIds.Count > 0)
+        foreach (var exId in exerciseIds)
         {
-            var exists = await _db.Exercises
-                .Where(x => request.ExerciseIds.Contains(x.Id))
-                .Select(x => x.Id)
-                .ToListAsync(ct);
-
-            foreach (var exId in exists)
-            {
-                workout.WorkoutExercises.Add(new WorkoutExercise { WorkoutId = workout.Id, ExerciseId = exId });
-            }
+            workout.WorkoutExercises.Add(new WorkoutExercise { WorkoutId = workout.Id, ExerciseId = exId });
         }
 
         await _workouts.SaveChangesAsync(ct);
@@ -63,20 +57,14 @@ public sealed class WorkoutService : IWorkoutService
         var workout = await _workouts.GetForUserAsync(userId, workoutId, ct);
         if (workout == null) throw new KeyNotFoundException("Workout not found.");
 
+        var exerciseIds = await ResolveExerciseIdsAsync(request.ExerciseIds, ct);
+
         workout.Name = request.Name.Trim();
 
         workout.WorkoutExercises.Clear();
-        if (request.ExerciseIds.Count > 0)
+        foreach (var exId in exerciseIds)
         {
-            var exists = await _db.Exercises
-                .Where(x => request.ExerciseIds.Contains(x.Id))
-                .Select(x => x.Id)
-                .ToListAsync(ct);
-
-            foreach (var exId in exists)
-            {
-                workout.WorkoutExercises.Add(new WorkoutExercise { WorkoutId = workout.Id, ExerciseId = exId });
-            }
+            workout.WorkoutExercises.Add(new WorkoutExercise { WorkoutId = workout.Id, ExerciseId = exId });
         }
 
         await _workouts.SaveChangesAsync(ct);
@@ -90,6 +78,26 @@ public sealed class WorkoutService : IWorkoutService
 
         _workouts.Remove(workout);
         await _workouts.SaveChangesAsync(ct);
+    }
+
+    private async Task<List<int>> ResolveExerciseIdsAsync(IReadOnlyList<int> requested, CancellationToken ct)
+    {
+        var wanted = requested.Distinct().ToList();
+        if (wanted.Count == 0) return wanted;
+
+        var found = await _db.Exercises
+            .Where(x => wanted.Contains(x.Id))
+            .Select(x => x.Id)
+            .ToListAsync(ct);
+
+        var missing = wanted.Except(found).Order().ToList();
+        if (missing.Count > 0)
+        {
+            var label = missing.Count == 1 ? "exercise" : "exercises";
+            throw new InvalidOperationException($"Unknown {label}: {string.Join(", ", missing)}.");
+        }
+
+        return wanted;
     }
 
     private static WorkoutDto ToDto(Workout w) =>
